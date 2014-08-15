@@ -1,6 +1,8 @@
+#ifndef __SCREEN_H__
+#define __SCREEN_H__
+
 #include <ncurses.h>
 
-WINDOW *messages_window = NULL;
-WINDOW *user_data_window = NULL;
-
 WINDOW *create_win(int h, int w, int starty, int startx);
+
+#endif //__SCREEN_H__

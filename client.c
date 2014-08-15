@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include "chat.h"
+#include "screen.h"
 
 // hold the nickname by parameter
 char *nickname;
@@ -70,7 +71,7 @@ int main(int argc, char *argv[])
 		recv(sock_server, &ret, sizeof(ret), 0);
 		printf("Received: %s\n", ret);
 
-		if (!strcmp(ret, OK))
+		if (!strcmp(ret, CHAT_OK))
 		{
 			pthread_t thread_id;
 			pthread_create(&thread_id, NULL, &receive_message_from_users, &sock_server);

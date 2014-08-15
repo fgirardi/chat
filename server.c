@@ -148,12 +148,12 @@ int main(int argc, char *argv[])
 		{
 			char msg[5];
 			if (added_registered_node(sock_client))
-				sprintf(msg, "%s", NOK);
+				sprintf(msg, "%s", CHAT_NOK);
 			else
-				sprintf(msg, "%s", OK);
+				sprintf(msg, "%s", CHAT_OK);
 			send(sock_client, &msg, sizeof(msg), 0);
 
-			if (!strcmp(msg, OK))
+			if (!strcmp(msg, CHAT_OK))
 			{
 				snprintf(verbosity, sizeof(verbosity), "server: Connection successful socket %d\n", sock_client);
 				do_verbose(verbosity);

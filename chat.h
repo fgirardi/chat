@@ -1,7 +1,7 @@
 #define CHAT_PORT 5678
 #define MAX_CONN 5
-#define OK "OK"
-#define NOK "NOK"
+#define CHAT_OK "OK"
+#define CHAT_NOK "NOK"
 
 enum modes {
 	REGISTER,
