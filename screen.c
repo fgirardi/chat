@@ -14,6 +14,13 @@ WINDOW *create_win(int h, int w, int starty, int startx)
 	return win;
 }
 
+void add_message(char *msg)
+{
+	wprintw(messages_window, "%s\n", msg);
+	scroll(messages_window);
+	wrefresh(messages_window);
+}
+
 void end_screen()
 {
 	if (messages_window)
@@ -26,4 +33,9 @@ void end_screen()
 void init_screen()
 {
 	initscr();
+
+	user_data_window = create_win(4, COLS, LINES - 4, 0);
+	messages_window = create_win(LINES - 4, COLS, 0, 0);
+
+	scrollok(messages_window, TRUE);
 }

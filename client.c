@@ -61,6 +61,8 @@ int main(int argc, char *argv[])
 		perror("Can't connect to server");
 	else
 	{
+		init_screen();
+
 		struct chat_message cm;
 		cm.type = REGISTER;
 		strncpy(cm.nickname, argv[2], sizeof(cm.nickname));
@@ -69,7 +71,8 @@ int main(int argc, char *argv[])
 
 		char ret[100];
 		recv(sock_server, &ret, sizeof(ret), 0);
-		printf("Received: %s\n", ret);
+
+		add_message("Received: ");
 
 		if (!strcmp(ret, CHAT_OK))
 		{
@@ -90,6 +93,8 @@ int main(int argc, char *argv[])
 	}
 
 	close(sock_server);
+
+	end_screen();
 
 	return 0;
 }
