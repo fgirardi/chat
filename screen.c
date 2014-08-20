@@ -34,13 +34,13 @@ void init_screen()
 {
 	initscr();
 
-	user_data_window = create_win(4, COLS, LINES - 4, 0, 1);
-	messages_window = create_win(LINES - 4, COLS, 0, 0, 0);
+	user_data_window = create_win(3, COLS, LINES - 3, 0, 1);
+	messages_window = create_win(LINES - 3, COLS, 0, 0, 0);
 
 	scrollok(messages_window, TRUE);
 }
 
 void get_user_input(char *user_data)
 {
-	wscanw(user_data_window, "%s", user_data);
+	mvwscanw(user_data_window, 1, 1, "%s", user_data);
 }
