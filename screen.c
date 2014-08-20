@@ -46,5 +46,5 @@ void get_user_input(char *user_data)
 	box(user_data_window, 0, 0);
 	wmove(user_data_window, 1, 1);
 	wrefresh(user_data_window);
-	wscanw(user_data_window, "%s", user_data);
+	wgetnstr(user_data_window, user_data, 100);
 }
