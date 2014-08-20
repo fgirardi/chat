@@ -3,12 +3,13 @@
 WINDOW *messages_window = NULL;
 WINDOW *user_data_window = NULL;
 
-WINDOW *create_win(int h, int w, int starty, int startx)
+WINDOW *create_win(int h, int w, int starty, int startx, int box)
 {
 	WINDOW *win;
 
 	win = newwin(h, w, starty, startx);
-	box(win, 0, 0);
+	if (box)
+		box(win, 0, 0);
 	wrefresh(win);
 
 	return win;
@@ -17,7 +18,6 @@ WINDOW *create_win(int h, int w, int starty, int startx)
 void add_message(char *msg)
 {
 	wprintw(messages_window, "%s\n", msg);
-	scroll(messages_window);
 	wrefresh(messages_window);
 }
 
@@ -34,8 +34,13 @@ void init_screen()
 {
 	initscr();
 
-	user_data_window = create_win(4, COLS, LINES - 4, 0);
-	messages_window = create_win(LINES - 4, COLS, 0, 0);
+	user_data_window = create_win(4, COLS, LINES - 4, 0, 1);
+	messages_window = create_win(LINES - 4, COLS, 0, 0, 0);
 
 	scrollok(messages_window, TRUE);
+}
+
+void get_user_input(char *user_data)
+{
+	wscanw(user_data_window, "%s", user_data);
 }
