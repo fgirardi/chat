@@ -33,7 +33,7 @@ void *receive_message_from_users(void *sock_server)
 		}
 
 		if (cm.type == SERVER_MESSAGE)
-			printf("%s", cm.msg);
+			add_message(cm.msg);
 	}
 
 	return NULL;
@@ -72,17 +72,18 @@ int main(int argc, char *argv[])
 		char ret[100];
 		recv(sock_server, &ret, sizeof(ret), 0);
 
-		add_message("Received: ");
-
 		if (!strcmp(ret, CHAT_OK))
 		{
+			add_message("Received OK from server...");
+
 			pthread_t thread_id;
 			pthread_create(&thread_id, NULL, &receive_message_from_users, &sock_server);
 			cm.type = SEND_MESSAGE;
 
 			while (1)
 			{
-				fgets(cm.msg, sizeof(cm.msg), stdin);
+				//fgets(cm.msg, sizeof(cm.msg), stdin);
+				get_user_input(cm.msg);
 				cm.msg[strlen(cm.msg)] = '\0';
 				if (send(sock_server, &cm, sizeof(cm), 0) == -1) {
 					printf("Error while sending message to server. Aborting...\n");
@@ -90,9 +91,10 @@ int main(int argc, char *argv[])
 				}
 			}
 		}
+
+		close(sock_server);
 	}
 
-	close(sock_server);
 
 	end_screen();
 
