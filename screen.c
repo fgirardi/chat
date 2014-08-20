@@ -42,5 +42,9 @@ void init_screen()
 
 void get_user_input(char *user_data)
 {
-	mvwscanw(user_data_window, 1, 1, "%s", user_data);
+	werase(user_data_window);
+	box(user_data_window, 0, 0);
+	wmove(user_data_window, 1, 1);
+	wrefresh(user_data_window);
+	wscanw(user_data_window, "%s", user_data);
 }
