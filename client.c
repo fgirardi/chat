@@ -92,11 +92,10 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		close(sock_server);
+		end_screen();
 	}
 
-
-	end_screen();
+	close(sock_server);
 
 	return 0;
 }
