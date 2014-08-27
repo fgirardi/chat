@@ -54,14 +54,14 @@ int added_registered_node(int sockfd)
 	return 0;
 }
 
-void send_message_to_clients(char *msg)
+void send_message_to_clients(std::string msg)
 {
 	pthread_mutex_lock(&messages_lock);
 
 	int i;
 	struct chat_message cm;
 	cm.type = SERVER_MESSAGE;
-	strncpy(cm.msg, msg, sizeof(cm.msg));
+	strncpy(cm.msg, msg.c_str(), msg.size() + 1);
 	for (i = 0; i < registered.how; i++)
 		send(registered.fds[i], &cm, sizeof(cm), 0);
 
@@ -85,11 +85,13 @@ void *recv_messages(void *sock_client)
 			time_t t = time(NULL);
 			struct tm *tm = localtime(&t);
 
-			char msg[200];
-			snprintf(msg, sizeof(msg), "%02d/%02d/%02d %02d:%02d:%02d [%s]: %s", tm->tm_mday, tm->tm_mon + 1,
-										tm->tm_year + 1900, tm->tm_hour, tm->tm_min,
-										tm->tm_sec, cm.nickname, cm.msg);
-			send_message_to_clients(msg);
+			send_message_to_clients(std::to_string(tm->tm_mday) + "/" +
+						std::to_string(tm->tm_mon + 1) + "/" + 
+						std::to_string(tm->tm_year + 1900) + " " +
+						std::to_string(tm->tm_hour) + ":" +
+						std::to_string(tm->tm_min) + ":" +
+						std::to_string(tm->tm_sec) +
+						"[" + cm.nickname + "]: " + cm.msg);
 		}
 	}
 	return NULL;
