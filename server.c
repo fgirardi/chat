@@ -14,8 +14,6 @@
 /*
 TODO:
 * Build an keep alive to close the socket from dead clients
-* Build an minimal UI using ncurses to better present the
-	messages from users
 */
 
 /* file descriptors of sockets */
