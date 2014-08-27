@@ -3,12 +3,12 @@
 WINDOW *messages_window = NULL;
 WINDOW *user_data_window = NULL;
 
-WINDOW *create_win(int h, int w, int starty, int startx, int box)
+WINDOW *create_win(int h, int w, int starty, int startx, int with_box)
 {
 	WINDOW *win;
 
 	win = newwin(h, w, starty, startx);
-	if (box)
+	if (with_box)
 		box(win, 0, 0);
 	wrefresh(win);
 
