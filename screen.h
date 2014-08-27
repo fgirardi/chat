@@ -1,11 +1,12 @@
 #ifndef __SCREEN_H__
 #define __SCREEN_H__
 
+#include <iostream>
 #include <ncurses.h>
 
 WINDOW *create_win(int h, int w, int starty, int startx, int box);
 
-void add_message(char *msg);
+void add_message(std::string msg);
 
 void init_screen();
 void end_screen();

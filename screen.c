@@ -1,4 +1,5 @@
 #include "screen.h"
+#include <iostream>
 
 WINDOW *messages_window = NULL;
 WINDOW *user_data_window = NULL;
@@ -15,9 +16,9 @@ WINDOW *create_win(int h, int w, int starty, int startx, int with_box)
 	return win;
 }
 
-void add_message(char *msg)
+void add_message(std::string msg)
 {
-	wprintw(messages_window, "%s\n", msg);
+	wprintw(messages_window, "%s\n", msg.c_str());
 	wrefresh(messages_window);
 }
 
