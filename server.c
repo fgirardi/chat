@@ -3,7 +3,6 @@
 #include <iostream>
 #include <pthread.h>
 #include <signal.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -27,15 +26,19 @@ pthread_mutex_t messages_lock;
 struct registered_nodes registered;
 pthread_t threads[MAX_CONN];
 
-/* verbose flag */
-int verbose = 0;
-char verbosity[100];
+#ifdef CHAT_VERBOSE
 
-void do_verbose(char *msg)
+void do_verbose(std::string msg)
 {
-	if (verbose)
-		std::cout << msg << std::endl;
+	std::cout << msg << std::endl;
 }
+
+#else
+
+void do_verbose(std::string) {}
+
+#endif
+
 
 void init()
 {
@@ -72,9 +75,11 @@ void *recv_messages(void *sock_client)
 	while (1)
 	{
 		int size = recv(sockfd, &cm, sizeof(cm), 0);
-		snprintf(verbosity, sizeof(verbosity), "server: Received msg user %s socket %d size %d: %s"
-							, cm.nickname, sockfd, size, cm.msg);
-		do_verbose(verbosity);
+		do_verbose("server: Received msg user " + std::string(cm.nickname) +
+				+ " socket " + std::to_string(sockfd)
+				+ " size " + std::to_string(size)
+				+ ": " + std::string(cm.msg));
+
 		if (cm.type == SEND_MESSAGE && size > 0)
 		{
 			time_t t = time(NULL);
@@ -107,7 +112,7 @@ void sighandler(int signum, siginfo_t *info, void *ptr)
 	finish_server();
 }
 
-int main(int argc, char *argv[])
+int main()
 {
 	struct sockaddr_in server, client;
 	struct sigaction act;
@@ -131,9 +136,6 @@ int main(int argc, char *argv[])
 	bind(sock_server, (struct sockaddr *)&server, sizeof(server));
 	listen(sock_server, 5);
 
-	if (argc > 1 && atoi(argv[1]) == 1)
-		verbose = 1;
-
 	while (1)
 	{
 		socklen_t size_client = sizeof(client);
@@ -142,8 +144,7 @@ int main(int argc, char *argv[])
 		struct chat_message cm;
 		recv(sock_client, &cm, sizeof(cm), 0);
 
-		snprintf(verbosity, sizeof(verbosity),"server: Connection accept socked %d type %d\n", sock_client, cm.type);
-		do_verbose(verbosity);
+		do_verbose("server: Connection accept socked " + std::to_string(sock_client));
 
 		if (cm.type == REGISTER)
 		{
@@ -156,8 +157,7 @@ int main(int argc, char *argv[])
 
 			if (!strcmp(msg, CHAT_OK))
 			{
-				snprintf(verbosity, sizeof(verbosity), "server: Connection successful socket %d\n", sock_client);
-				do_verbose(verbosity);
+				do_verbose("server: Connection successful socket " + std::to_string(sock_client));
 				pthread_create(&threads[registered.how -1], NULL, &recv_messages, (void *)&sock_client);
 			}
 		}
