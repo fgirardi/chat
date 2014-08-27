@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include "chat.h"
+#include "client.h"
 #include "screen.h"
 
 // hold the nickname by parameter
