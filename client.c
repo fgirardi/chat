@@ -85,8 +85,14 @@ int main(int argc, char *argv[])
 			while (1)
 			{
 				//fgets(cm.msg, sizeof(cm.msg), stdin);
-				get_user_input(cm.msg);
+				std::vector<char> msg(100);
+				get_user_input(msg);
+
+				std::string nmsg(msg.begin(), msg.end());
+
+				strcpy(cm.msg, nmsg.c_str());
 				cm.msg[strlen(cm.msg)] = '\0';
+
 				if (send(sock_server, &cm, sizeof(cm), 0) == -1) {
 					std::cout << "Error while sending message to server. Aborting...\n";
 					break;
