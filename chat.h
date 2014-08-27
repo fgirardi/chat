@@ -1,4 +1,4 @@
-#define CHAT_PORT 5678
+#define CHAT_PORT 9090
 #define MAX_CONN 5
 #define CHAT_OK "OK"
 #define CHAT_NOK "NOK"
