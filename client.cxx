@@ -1,7 +1,10 @@
 #include "chat.h"
 #include "client.h"
+#include "screen.h"
 
+#include <string.h>
 #include <strings.h>
+#include <vector>
 
 Client::Client()
 {
@@ -22,6 +25,42 @@ bool Client::server_connect(std::string address)
 	if (connect(sock_server, (struct sockaddr *)&server_addr,
 					(socklen_t)sizeof(server_addr)))
 		return false;
+
+	return true;
+}
+
+bool Client::send_register_message()
+{
+	struct chat_message cm = {.type = REGISTER };
+
+	if (send(sock_server, &cm, sizeof(cm), 0) == -1)
+		return false;
+
+	char ret[100];
+
+	if (recv(sock_server, &ret, sizeof(ret), 0) == -1)
+		return false;
+
+	if (!strcmp(ret, CHAT_OK))
+		return true;
+
+	return false;
+}
+
+bool Client::send_user_message(struct chat_message cm)
+{
+	std::vector<char> msg(100);
+	get_user_input(msg);
+
+	std::string nmsg(msg.begin(), msg.end());
+
+	strcpy(cm.msg, nmsg.c_str());
+	cm.msg[strlen(cm.msg)] = '\0';
+
+	if (send(sock_server, &cm, sizeof(cm), 0) == -1) {
+		std::cout << "Error while sending message to server. Aborting...\n";
+		return false;
+	}
 
 	return true;
 }
