@@ -4,11 +4,20 @@
 
 #include <string.h>
 #include <strings.h>
+#include <unistd.h>
 #include <vector>
 
-Client::Client()
+Client::Client(std::string nick)
 {
+	sock_server = 0;
 	bzero(&server_addr, sizeof(server_addr));
+	nickname = nick;
+}
+
+Client::~Client()
+{
+	if (sock_server)
+		close(sock_server);
 }
 
 bool Client::server_connect(std::string address)
@@ -47,8 +56,11 @@ bool Client::send_register_message()
 	return false;
 }
 
-bool Client::send_user_message(struct chat_message cm)
+bool Client::send_user_message()
 {
+	struct chat_message cm = {.type = SEND_MESSAGE };
+	strcpy(cm.nickname, nickname.c_str());
+
 	std::vector<char> msg(100);
 	get_user_input(msg);
 
