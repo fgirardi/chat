@@ -1,5 +1,6 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <iostream>
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
@@ -33,7 +34,7 @@ char verbosity[100];
 void do_verbose(char *msg)
 {
 	if (verbose)
-		printf("%s", msg);
+		std::cout << msg << std::endl;
 }
 
 void init()
@@ -92,7 +93,7 @@ void *recv_messages(void *sock_client)
 void finish_server()
 {
 	close(sock_server);
-	printf("Closed the servers socket\n");
+	std::cout << "Closed the servers socket" << std::endl;
 
 	exit(0);
 }

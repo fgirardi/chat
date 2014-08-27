@@ -14,7 +14,7 @@
 
 void helpMessage()
 {
-	std::cout << "You need to give the address number and nickname as argument!";
+	std::cout << "You need to give the address number and nickname as argument!" << std::endl;
 	exit(1);
 }
 
@@ -27,7 +27,7 @@ void *receive_message_from_users(void *sock_server)
 	{
 		/* stop on error or server closes the socket */
 		if (recv(*sockfd, &cm, sizeof(cm), 0) == -1) {
-			std::cout << "Error while trying to receive message from server. Aborting...\n";
+			std::cout << "Error while trying to receive message from server. Aborting..." << std::endl;
 			break;
 		}
 
