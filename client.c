@@ -1,12 +1,12 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
 #include <iostream>
+#include <thread>
 
 #include "chat.h"
 #include "client.h"
@@ -55,14 +55,15 @@ int main(int argc, char *argv[])
 	if (client.send_register_message())
 	{
 		add_message("Received OK from server...");
-
-		pthread_t thread_id;
 		int server_sock = client.get_server_sock();
-		pthread_create(&thread_id, NULL, &receive_message_from_users, &server_sock);
+
+		std::thread recv_msgs(receive_message_from_users, &server_sock);
 
 		while (1)
 			if (!client.send_user_message())
 				break;
+
+		recv_msgs.join();
 	}
 
 	end_screen();
