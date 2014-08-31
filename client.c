@@ -26,7 +26,7 @@ void *receive_message_from_users(void *sock_server)
 	while (1)
 	{
 		/* stop on error or server closes the socket */
-		if (recv(*sockfd, &cm, sizeof(cm), 0) == -1) {
+		if (recv(*sockfd, &cm, sizeof(cm), 0) <= 0) {
 			std::cout << "Error while trying to receive message from server. Aborting..." << std::endl;
 			break;
 		}

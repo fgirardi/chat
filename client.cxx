@@ -42,12 +42,12 @@ bool Client::send_register_message()
 {
 	struct chat_message cm = {.type = REGISTER };
 
-	if (send(sock_server, &cm, sizeof(cm), 0) == -1)
+	if (send(sock_server, &cm, sizeof(cm), 0) <= 0)
 		return false;
 
 	char ret[100];
 
-	if (recv(sock_server, &ret, sizeof(ret), 0) == -1)
+	if (recv(sock_server, &ret, sizeof(ret), 0) <= 0)
 		return false;
 
 	if (!strcmp(ret, CHAT_OK))
@@ -69,7 +69,7 @@ bool Client::send_user_message()
 	strcpy(cm.msg, nmsg.c_str());
 	cm.msg[strlen(cm.msg)] = '\0';
 
-	if (send(sock_server, &cm, sizeof(cm), 0) == -1) {
+	if (send(sock_server, &cm, sizeof(cm), 0) <= 0) {
 		std::cout << "Error while sending message to server. Aborting...\n";
 		return false;
 	}
