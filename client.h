@@ -13,8 +13,8 @@ public:
 	bool server_connect(std::string);
 	bool send_register_message();
 	bool send_user_message();
+	void recv_msgs();
 
-	int get_server_sock() { return sock_server; }
 private:
 	int sock_server;
 	struct sockaddr_in server_addr;

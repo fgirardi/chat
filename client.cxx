@@ -76,3 +76,20 @@ bool Client::send_user_message()
 
 	return true;
 }
+
+void Client::recv_msgs()
+{
+	struct chat_message cm;
+
+	while (1)
+	{
+		/* stop on error or server closes the socket */
+		if (recv(sock_server, &cm, sizeof(cm), 0) <= 0) {
+			std::cout << "Error while trying to receive message from server. Aborting..." << std::endl;
+			break;
+		}
+
+		if (cm.type == SERVER_MESSAGE)
+			add_message(cm.msg);
+	}
+}
