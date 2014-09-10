@@ -41,6 +41,7 @@ bool Client::server_connect(std::string address)
 bool Client::send_register_message()
 {
 	struct chat_message cm = {.type = REGISTER };
+	strcpy(cm.nickname, nickname.c_str());
 
 	if (send(sock_server, &cm, sizeof(cm), 0) == -1)
 		return false;
