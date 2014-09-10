@@ -12,9 +12,7 @@
 /*
 TODO:
 * Build an keep alive to close the socket from dead clients
-* Create server class
 * Convert chat_message into a class
-* Convert threads array into std::vector
 */
 
 /* file descriptors of sockets */
