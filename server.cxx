@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include <signal.h>
 #include <string.h>
 #include <strings.h>
 #include <sys/socket.h>
@@ -79,6 +80,8 @@ void *recv_messages(void *sock_client)
 						"[" + cm.nickname + "]: " + cm.msg);
 		}
 	}
+	pthread_kill(pthread_self(), SIGKILL);
+
 	return NULL;
 }
 
