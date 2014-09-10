@@ -6,7 +6,7 @@ CXXFLAGS=-Wall -Wextra -g -lpthread -std=c++11
 #CXXFLAGS += -DCHAT_VERBOSE
 
 all:
-	$(CC) server.c $(CXXFLAGS) -o server
+	$(CC) server.c server.cxx $(CXXFLAGS) -o server
 	$(CC) client.c client.cxx screen.c $(CXXFLAGS) -o client -lncurses
 
 clean:
