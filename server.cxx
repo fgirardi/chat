@@ -20,7 +20,6 @@ TODO:
 pthread_mutex_t messages_lock;
 
 struct registered_nodes registered;
-pthread_t threads[MAX_CONN];
 
 #ifdef CHAT_VERBOSE
 void do_verbose(std::string msg)
@@ -142,7 +141,9 @@ bool Server::getClientMessages()
 		if (!strcmp(msg, CHAT_OK))
 		{
 			do_verbose("server: Connection successful socket " + std::to_string(sock_client));
-			pthread_create(&threads[registered.how -1], NULL, &recv_messages, (void *)&sock_client);
+			client_fds.insert(sock_client);
+			pthread_t pt;
+			pthread_create(&pt, NULL, &recv_messages, (void *)&sock_client);
 		}
 	}
 
