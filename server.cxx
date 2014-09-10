@@ -9,6 +9,7 @@
 
 #include "chat.h"
 #include "server.h"
+
 /*
 TODO:
 * Build an keep alive to close the socket from dead clients
@@ -44,7 +45,10 @@ void send_message_to_clients(std::string msg, std::unordered_set<int> *client_fd
 	strncpy(cm.msg, msg.c_str(), msg.size() + 1);
 
 	for (const int fd : *client_fds)
+	{
+		do_verbose("server: send message to socket " + std::to_string(fd));
 		send(fd, &cm, sizeof(cm), 0);
+	}
 
 	pthread_mutex_unlock(&messages_lock);
 }
@@ -57,6 +61,11 @@ void *recv_messages(void *ph)
 	while (1)
 	{
 		int size = recv(sockfd, &cm, sizeof(cm), 0);
+
+		// in case of socket error, remove the socket from the client_fds
+		if (size <= 0)
+			break;
+
 		do_verbose("server: Received msg user " + std::string(cm.nickname) +
 				+ " socket " + std::to_string(sockfd)
 				+ " size " + std::to_string(size)
@@ -76,7 +85,16 @@ void *recv_messages(void *ph)
 						"[" + cm.nickname + "]: " + cm.msg, lph.client_fds);
 		}
 	}
-	//pthread_kill(pthread_self(), SIGKILL);
+
+	do_verbose("server: socket " + std::to_string(sockfd) + " closed. Removing from clients list");
+
+	pthread_mutex_lock(&messages_lock);
+	lph.client_fds->erase(sockfd);
+	pthread_mutex_unlock(&messages_lock);
+
+	int retVal = 0;
+
+	pthread_exit(&retVal);
 
 	return NULL;
 }
