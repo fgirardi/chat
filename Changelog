@@ -1,0 +1,11 @@
+10-08-2014:
+	Server:
+		Managed user session. When a user disconnects, the resources
+		in server are released
+
+		Created server class and removed server.c file
+
+		Send message to online users about new user in the room
+	Client:
+		Created client class, and moved all related code from client.c
+		to client.cxx
