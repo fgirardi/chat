@@ -132,6 +132,26 @@ bool Server::init()
 	return true;
 }
 
+void Server::notifyNewClient(std::string username)
+{
+	pthread_mutex_lock(&messages_lock);
+
+	struct chat_message cm;
+	cm.type = SERVER_MESSAGE;
+
+	std::string tmp("User " + username + " entenred in the room.");
+
+	strncpy(cm.msg, tmp.c_str(), tmp.size() + 1);
+
+	for (const int fd : client_fds)
+	{
+		do_verbose("server: send message to socket " + std::to_string(fd));
+		send(fd, &cm, sizeof(cm), 0);
+	}
+
+	pthread_mutex_unlock(&messages_lock);
+}
+
 bool Server::getClientMessages()
 {
 	struct sockaddr_in client;
@@ -158,6 +178,8 @@ bool Server::getClientMessages()
 			pthread_mutex_lock(&messages_lock);
 			client_fds.insert(sock_client);
 			pthread_mutex_unlock(&messages_lock);
+
+			notifyNewClient(std::string(cm.nickname));
 
 			struct pthread_hack ph = {.sock_client = sock_client, .client_fds = &client_fds};
 
