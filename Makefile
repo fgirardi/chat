@@ -1,5 +1,5 @@
 CC=g++
-CXXFLAGS=-Wall -Wextra -g -lpthread -std=c++11
+CXXFLAGS=-Wall -Wextra -g -lpthread -std=c++0x
 
 # just use in case of debug
 CXXFLAGS += -DCHAT_VERBOSE
