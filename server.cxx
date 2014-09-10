@@ -31,12 +31,6 @@ void do_verbose(std::string msg)
 void do_verbose(std::string) {}
 #endif
 
-void init()
-{
-	registered.how = 0;
-	pthread_mutex_init(&messages_lock, NULL);
-}
-
 int added_registered_node(int sockfd)
 {
 	if (registered.how == MAX_CONN)
