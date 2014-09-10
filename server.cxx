@@ -153,7 +153,11 @@ bool Server::getClientMessages()
 		if (!strcmp(msg, CHAT_OK))
 		{
 			do_verbose("server: Connection successful socket " + std::to_string(sock_client));
+
+			// protect fds create with lock
+			pthread_mutex_lock(&messages_lock);
 			client_fds.insert(sock_client);
+			pthread_mutex_unlock(&messages_lock);
 
 			struct pthread_hack ph = {.sock_client = sock_client, .client_fds = &client_fds};
 
