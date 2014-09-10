@@ -1,9 +1,8 @@
 CC=g++
-#CFLAGS=-Wall -Werror -Wextra -g -lpthread
 CXXFLAGS=-Wall -Wextra -g -lpthread -std=c++11
 
 # just use in case of debug
-#CXXFLAGS += -DCHAT_VERBOSE
+CXXFLAGS += -DCHAT_VERBOSE
 
 all:
 	$(CC) server.c server.cxx $(CXXFLAGS) -o server
