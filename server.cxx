@@ -1,4 +1,5 @@
 #include <iostream>
+#include <unordered_set>
 
 #include <signal.h>
 #include <string.h>
@@ -19,8 +20,6 @@ TODO:
 /* file descriptors of sockets */
 pthread_mutex_t messages_lock;
 
-struct registered_nodes registered;
-
 #ifdef CHAT_VERBOSE
 void do_verbose(std::string msg)
 {
@@ -31,32 +30,32 @@ void do_verbose(std::string msg)
 void do_verbose(std::string) {}
 #endif
 
-int added_registered_node(int sockfd)
-{
-	if (registered.how == MAX_CONN)
-		return 1;
-	registered.fds[registered.how++] = sockfd;
-	return 0;
-}
+/* Just to use in pthread_create*/
 
-void send_message_to_clients(std::string msg)
+struct pthread_hack {
+	int sock_client;
+	std::unordered_set<int> *client_fds;
+};
+
+void send_message_to_clients(std::string msg, std::unordered_set<int> *client_fds)
 {
 	pthread_mutex_lock(&messages_lock);
 
-	int i;
 	struct chat_message cm;
 	cm.type = SERVER_MESSAGE;
 	strncpy(cm.msg, msg.c_str(), msg.size() + 1);
-	for (i = 0; i < registered.how; i++)
-		send(registered.fds[i], &cm, sizeof(cm), 0);
+
+	for (const int fd : *client_fds)
+		send(fd, &cm, sizeof(cm), 0);
 
 	pthread_mutex_unlock(&messages_lock);
 }
 
-void *recv_messages(void *sock_client)
+void *recv_messages(void *ph)
 {
 	struct chat_message cm;
-	int sockfd = *(int *)sock_client;
+	struct pthread_hack lph = *(struct pthread_hack *)ph;
+	int sockfd = lph.sock_client;
 	while (1)
 	{
 		int size = recv(sockfd, &cm, sizeof(cm), 0);
@@ -76,10 +75,10 @@ void *recv_messages(void *sock_client)
 						std::to_string(tm->tm_hour) + ":" +
 						std::to_string(tm->tm_min) + ":" +
 						std::to_string(tm->tm_sec) +
-						"[" + cm.nickname + "]: " + cm.msg);
+						"[" + cm.nickname + "]: " + cm.msg, lph.client_fds);
 		}
 	}
-	pthread_kill(pthread_self(), SIGKILL);
+	//pthread_kill(pthread_self(), SIGKILL);
 
 	return NULL;
 }
@@ -132,18 +131,18 @@ bool Server::getClientMessages()
 	if (cm.type == REGISTER)
 	{
 		char msg[5];
-		if (added_registered_node(sock_client))
-			sprintf(msg, "%s", CHAT_NOK);
-		else
-			sprintf(msg, "%s", CHAT_OK);
+		sprintf(msg, "%s", CHAT_OK);
 		send(sock_client, &msg, sizeof(msg), 0); 
 
 		if (!strcmp(msg, CHAT_OK))
 		{
 			do_verbose("server: Connection successful socket " + std::to_string(sock_client));
 			client_fds.insert(sock_client);
+
+			struct pthread_hack ph = {.sock_client = sock_client, .client_fds = &client_fds};
+
 			pthread_t pt;
-			pthread_create(&pt, NULL, &recv_messages, (void *)&sock_client);
+			pthread_create(&pt, NULL, &recv_messages, &ph);
 		}
 	}
 
