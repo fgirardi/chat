@@ -12,7 +12,6 @@
 
 /*
 TODO:
-* Build an keep alive to close the socket from dead clients
 * Convert chat_message into a class
 */
 
