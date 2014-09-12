@@ -4,6 +4,27 @@
 
 #include <unordered_set>
 
+class ClientConn
+{
+public:
+	ClientConn(int sockid, std::string name);
+
+	bool operator==(const ClientConn &c) const {
+		return c.sockid == sockid;
+	}
+
+	int sockid;
+private:
+	std::string nickname;
+};
+
+struct Hash
+{
+	size_t operator() (const ClientConn &c) const {
+		return static_cast<size_t>(c.sockid);
+	}
+};
+
 class Server
 {
 public:
@@ -17,5 +38,5 @@ private:
 	int sock_server;
 	int sock_client;
 	struct sockaddr_in server;
-	std::unordered_set<int> client_fds;
+	std::unordered_set<ClientConn, Hash> clients;
 };

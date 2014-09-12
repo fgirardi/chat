@@ -32,10 +32,10 @@ void do_verbose(std::string) {}
 
 struct pthread_hack {
 	int sock_client;
-	std::unordered_set<int> *client_fds;
+	std::unordered_set<ClientConn, Hash> *clients;
 };
 
-void send_message_to_clients(std::string msg, std::unordered_set<int> *client_fds)
+void send_message_to_clients(std::string msg, std::unordered_set<ClientConn, Hash> *clients)
 {
 	pthread_mutex_lock(&messages_lock);
 
@@ -43,10 +43,10 @@ void send_message_to_clients(std::string msg, std::unordered_set<int> *client_fd
 	cm.type = SERVER_MESSAGE;
 	strncpy(cm.msg, msg.c_str(), msg.size() + 1);
 
-	for (const int fd : *client_fds)
+	for (auto c : *clients)
 	{
-		do_verbose("server: send message to socket " + std::to_string(fd));
-		send(fd, &cm, sizeof(cm), 0);
+		do_verbose("server: send message to socket " + std::to_string(c.sockid));
+		send(c.sockid, &cm, sizeof(cm), 0);
 	}
 
 	pthread_mutex_unlock(&messages_lock);
@@ -61,7 +61,7 @@ void *recv_messages(void *ph)
 	{
 		int size = recv(sockfd, &cm, sizeof(cm), 0);
 
-		// in case of socket error, remove the socket from the client_fds
+		// in case of socket error, remove the socket from the clients
 		if (size <= 0)
 			break;
 
@@ -71,13 +71,16 @@ void *recv_messages(void *ph)
 				+ ": " + std::string(cm.msg));
 
 		if (cm.type == SEND_MESSAGE && size > 0)
-			send_message_to_clients("[" + std::string(cm.nickname) + "]: " + std::string(cm.msg), lph.client_fds);
+			send_message_to_clients("[" + std::string(cm.nickname) + "]: " + std::string(cm.msg), lph.clients);
 	}
 
 	do_verbose("server: socket " + std::to_string(sockfd) + " closed. Removing from clients list");
 
+	// just to remove the sockfd from clients
+	ClientConn c(sockfd, "");
+
 	pthread_mutex_lock(&messages_lock);
-	lph.client_fds->erase(sockfd);
+	lph.clients->erase(c);
 	pthread_mutex_unlock(&messages_lock);
 
 	int retVal = 0;
@@ -86,6 +89,11 @@ void *recv_messages(void *ph)
 
 	return NULL;
 }
+
+ClientConn::ClientConn(int sockid, std::string name)
+	: sockid(sockid)
+	, nickname(name)
+{}
 
 Server::Server()
 	: sock_server(0)
@@ -131,10 +139,10 @@ void Server::notifyNewClient(std::string username)
 
 	strncpy(cm.msg, tmp.c_str(), tmp.size() + 1);
 
-	for (const int fd : client_fds)
+	for (auto c : clients)
 	{
-		do_verbose("server: send message to socket " + std::to_string(fd));
-		send(fd, &cm, sizeof(cm), 0);
+		do_verbose("server: send message to socket " + std::to_string(c.sockid));
+		send(c.sockid, &cm, sizeof(cm), 0);
 	}
 
 	pthread_mutex_unlock(&messages_lock);
@@ -162,14 +170,16 @@ bool Server::getClientMessages()
 		{
 			do_verbose("server: Connection successful socket " + std::to_string(sock_client));
 
+			ClientConn c(sock_client, cm.nickname);
+
 			// protect fds create with lock
 			pthread_mutex_lock(&messages_lock);
-			client_fds.insert(sock_client);
+			clients.insert(c);
 			pthread_mutex_unlock(&messages_lock);
 
 			notifyNewClient(std::string(cm.nickname));
 
-			struct pthread_hack ph = {.sock_client = sock_client, .client_fds = &client_fds};
+			struct pthread_hack ph = {.sock_client = sock_client, .clients = &clients};
 
 			pthread_t pt;
 			pthread_create(&pt, NULL, &recv_messages, &ph);
