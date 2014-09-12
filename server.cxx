@@ -71,18 +71,7 @@ void *recv_messages(void *ph)
 				+ ": " + std::string(cm.msg));
 
 		if (cm.type == SEND_MESSAGE && size > 0)
-		{
-			time_t t = time(NULL);
-			struct tm *tm = localtime(&t);
-
-			send_message_to_clients(std::to_string(tm->tm_mday) + "/" +
-						std::to_string(tm->tm_mon + 1) + "/" + 
-						std::to_string(tm->tm_year + 1900) + " " +
-						std::to_string(tm->tm_hour) + ":" +
-						std::to_string(tm->tm_min) + ":" +
-						std::to_string(tm->tm_sec) +
-						"[" + cm.nickname + "]: " + cm.msg, lph.client_fds);
-		}
+			send_message_to_clients("[" + std::string(cm.nickname) + "]: " + std::string(cm.msg), lph.client_fds);
 	}
 
 	do_verbose("server: socket " + std::to_string(sockfd) + " closed. Removing from clients list");

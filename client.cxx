@@ -91,6 +91,18 @@ void Client::recv_msgs()
 		}
 
 		if (cm.type == SERVER_MESSAGE)
-			add_message(cm.msg);
+		{
+			time_t t = time(NULL);
+			struct tm *tm = localtime(&t);
+
+			std::string msg = std::to_string(tm->tm_mday) + "/" +
+						std::to_string(tm->tm_mon + 1) + "/" +
+						std::to_string(tm->tm_year + 1900) + " " +
+						std::to_string(tm->tm_hour) + ":" +
+						std::to_string(tm->tm_min) + ":" +
+						std::to_string(tm->tm_sec) + " " + cm.msg;
+
+			add_message(msg);
+		}
 	}
 }
