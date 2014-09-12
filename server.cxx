@@ -79,6 +79,11 @@ void *recv_messages(void *ph)
 	// just to remove the sockfd from clients
 	ClientConn c(sockfd, "");
 
+	auto cdata = lph.clients->find(c);
+
+	if (cdata != lph.clients->end())
+		send_message_to_clients("User " + std::string(cdata->nickname) + " was disconnected from the room", lph.clients);
+
 	pthread_mutex_lock(&messages_lock);
 	lph.clients->erase(c);
 	pthread_mutex_unlock(&messages_lock);
@@ -128,26 +133,6 @@ bool Server::init()
 	return true;
 }
 
-void Server::notifyNewClient(std::string username)
-{
-	pthread_mutex_lock(&messages_lock);
-
-	struct chat_message cm;
-	cm.type = SERVER_MESSAGE;
-
-	std::string tmp("User " + username + " entenred in the room.");
-
-	strncpy(cm.msg, tmp.c_str(), tmp.size() + 1);
-
-	for (auto c : clients)
-	{
-		do_verbose("server: send message to socket " + std::to_string(c.sockid));
-		send(c.sockid, &cm, sizeof(cm), 0);
-	}
-
-	pthread_mutex_unlock(&messages_lock);
-}
-
 bool Server::getClientMessages()
 {
 	struct sockaddr_in client;
@@ -177,7 +162,8 @@ bool Server::getClientMessages()
 			clients.insert(c);
 			pthread_mutex_unlock(&messages_lock);
 
-			notifyNewClient(std::string(cm.nickname));
+			send_message_to_clients("User " + std::string(c.nickname) + " entered in the room", &clients);
+
 
 			struct pthread_hack ph = {.sock_client = sock_client, .clients = &clients};
 

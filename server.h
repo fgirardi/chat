@@ -14,7 +14,6 @@ public:
 	}
 
 	int sockid;
-private:
 	std::string nickname;
 };
 
@@ -33,7 +32,6 @@ public:
 	bool init();
 	void finish();
 	bool getClientMessages();
-	void notifyNewClient(std::string);
 private:
 	int sock_server;
 	int sock_client;
