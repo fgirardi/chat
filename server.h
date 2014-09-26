@@ -33,6 +33,7 @@ public:
 	void finish();
 	int getClientMessages();
 	void recv_messages(int sockfd);
+	void send_message_to_clients(std::string msg);
 private:
 	int sock_server;
 	int sock_client;

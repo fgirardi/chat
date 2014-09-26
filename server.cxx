@@ -29,7 +29,7 @@ void do_verbose(std::string msg)
 void do_verbose(std::string) {}
 #endif
 
-void send_message_to_clients(std::string msg, std::unordered_set<ClientConn, Hash> *clients)
+void Server::send_message_to_clients(std::string msg)
 {
 	pthread_mutex_lock(&messages_lock);
 
@@ -37,7 +37,7 @@ void send_message_to_clients(std::string msg, std::unordered_set<ClientConn, Has
 	cm.type = SERVER_MESSAGE;
 	strncpy(cm.msg, msg.c_str(), msg.size() + 1);
 
-	for (auto c : *clients)
+	for (auto c : clients)
 	{
 		do_verbose("server: send message to socket " + std::to_string(c.sockid));
 		send(c.sockid, &cm, sizeof(cm), 0);
@@ -63,7 +63,7 @@ void Server::recv_messages(int sockfd)
 				+ ": " + std::string(cm.msg));
 
 		if (cm.type == SEND_MESSAGE && size > 0)
-			send_message_to_clients("[" + std::string(cm.nickname) + "]: " + std::string(cm.msg), &clients);
+			send_message_to_clients("[" + std::string(cm.nickname) + "]: " + std::string(cm.msg));
 	}
 
 	do_verbose("server: socket " + std::to_string(sockfd) + " closed. Removing from clients list");
@@ -74,7 +74,7 @@ void Server::recv_messages(int sockfd)
 	auto cdata = clients.find(c);
 
 	if (cdata != clients.end())
-		send_message_to_clients("User " + std::string(cdata->nickname) + " was disconnected from the room", &clients);
+		send_message_to_clients("User " + std::string(cdata->nickname) + " was disconnected from the room");
 
 	pthread_mutex_lock(&messages_lock);
 	clients.erase(c);
@@ -148,7 +148,7 @@ int Server::getClientMessages()
 			clients.insert(c);
 			pthread_mutex_unlock(&messages_lock);
 
-			send_message_to_clients("User " + std::string(c.nickname) + " entered in the room", &clients);
+			send_message_to_clients("User " + std::string(c.nickname) + " entered in the room");
 
 			return sock_client;
 		}
