@@ -6,7 +6,7 @@ CXXFLAGS += -DCHAT_VERBOSE
 
 all:
 	$(CC) server.cxx $(CXXFLAGS) -o server
-	$(CC) client.c client.cxx screen.c $(CXXFLAGS) -o client -lncurses
+	$(CC) client.cxx screen.c $(CXXFLAGS) -o client -lncurses
 
 clean:
 	rm server client
