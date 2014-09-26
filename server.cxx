@@ -77,6 +77,9 @@ Server::~Server()
 
 void Server::add_client(ClientConn &c)
 {
+	do_verbose("server: Connection successful socket " + std::to_string(sock_client));
+	send_message_to_clients("User " + std::string(c.nickname) + " entered in the room");
+
 	client_mutex.lock();
 	clients.insert(c);
 	client_mutex.unlock();
@@ -137,12 +140,9 @@ int Server::getClientMessages()
 
 		if (!strcmp(msg, CHAT_OK))
 		{
-			do_verbose("server: Connection successful socket " + std::to_string(sock_client));
-
 			ClientConn c(sock_client, cm.nickname);
 
 			add_client(c);
-			send_message_to_clients("User " + std::string(c.nickname) + " entered in the room");
 
 			return sock_client;
 		}
