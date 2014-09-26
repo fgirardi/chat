@@ -31,7 +31,8 @@ public:
 	~Server();
 	bool init();
 	void finish();
-	bool getClientMessages();
+	int getClientMessages();
+	void recv_messages(int sockfd);
 private:
 	int sock_server;
 	int sock_client;

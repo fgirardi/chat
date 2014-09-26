@@ -1,4 +1,5 @@
 #include <iostream>
+#include <thread>
 #include <unordered_set>
 
 #include <signal.h>
@@ -28,13 +29,6 @@ void do_verbose(std::string msg)
 void do_verbose(std::string) {}
 #endif
 
-/* Just to use in pthread_create*/
-
-struct pthread_hack {
-	int sock_client;
-	std::unordered_set<ClientConn, Hash> *clients;
-};
-
 void send_message_to_clients(std::string msg, std::unordered_set<ClientConn, Hash> *clients)
 {
 	pthread_mutex_lock(&messages_lock);
@@ -52,11 +46,9 @@ void send_message_to_clients(std::string msg, std::unordered_set<ClientConn, Has
 	pthread_mutex_unlock(&messages_lock);
 }
 
-void *recv_messages(void *ph)
+void Server::recv_messages(int sockfd)
 {
 	struct chat_message cm;
-	struct pthread_hack lph = *(struct pthread_hack *)ph;
-	int sockfd = lph.sock_client;
 	while (1)
 	{
 		int size = recv(sockfd, &cm, sizeof(cm), 0);
@@ -71,7 +63,7 @@ void *recv_messages(void *ph)
 				+ ": " + std::string(cm.msg));
 
 		if (cm.type == SEND_MESSAGE && size > 0)
-			send_message_to_clients("[" + std::string(cm.nickname) + "]: " + std::string(cm.msg), lph.clients);
+			send_message_to_clients("[" + std::string(cm.nickname) + "]: " + std::string(cm.msg), &clients);
 	}
 
 	do_verbose("server: socket " + std::to_string(sockfd) + " closed. Removing from clients list");
@@ -79,20 +71,14 @@ void *recv_messages(void *ph)
 	// just to remove the sockfd from clients
 	ClientConn c(sockfd, "");
 
-	auto cdata = lph.clients->find(c);
+	auto cdata = clients.find(c);
 
-	if (cdata != lph.clients->end())
-		send_message_to_clients("User " + std::string(cdata->nickname) + " was disconnected from the room", lph.clients);
+	if (cdata != clients.end())
+		send_message_to_clients("User " + std::string(cdata->nickname) + " was disconnected from the room", &clients);
 
 	pthread_mutex_lock(&messages_lock);
-	lph.clients->erase(c);
+	clients.erase(c);
 	pthread_mutex_unlock(&messages_lock);
-
-	int retVal = 0;
-
-	pthread_exit(&retVal);
-
-	return NULL;
 }
 
 ClientConn::ClientConn(int sockid, std::string name)
@@ -133,7 +119,7 @@ bool Server::init()
 	return true;
 }
 
-bool Server::getClientMessages()
+int Server::getClientMessages()
 {
 	struct sockaddr_in client;
 
@@ -164,15 +150,11 @@ bool Server::getClientMessages()
 
 			send_message_to_clients("User " + std::string(c.nickname) + " entered in the room", &clients);
 
-
-			struct pthread_hack ph = {.sock_client = sock_client, .clients = &clients};
-
-			pthread_t pt;
-			pthread_create(&pt, NULL, &recv_messages, &ph);
+			return sock_client;
 		}
 	}
 
-	return true;
+	return 0;
 }
 
 int main()
@@ -182,7 +164,13 @@ int main()
 	if (!server.init())
 		return 1;
 
-	while (server.getClientMessages()) {}
+	while (true) {
+		int sock_client = server.getClientMessages();
+		if (sock_client == 0)
+			break;
 
+		std::thread t(&Server::recv_messages, &server, sock_client);
+		t.detach();
+	}
 	return 0;
 }
