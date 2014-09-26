@@ -35,6 +35,8 @@ public:
 	int getClientMessages();
 	void recv_messages(int sockfd);
 	void send_message_to_clients(std::string msg);
+	void add_client(ClientConn &c);
+	void remove_client(ClientConn &c);
 private:
 	int sock_server;
 	int sock_client;

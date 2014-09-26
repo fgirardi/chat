@@ -67,15 +67,7 @@ void Server::recv_messages(int sockfd)
 
 	// just to remove the sockfd from clients
 	ClientConn c(sockfd, "");
-
-	auto cdata = clients.find(c);
-
-	if (cdata != clients.end())
-		send_message_to_clients("User " + std::string(cdata->nickname) + " was disconnected from the room");
-
-	client_mutex.lock();
-	clients.erase(c);
-	client_mutex.unlock();
+	remove_client(c);
 }
 
 ClientConn::ClientConn(int sockid, std::string name)
@@ -93,6 +85,25 @@ Server::~Server()
 		close(sock_server);
 
 	std::cout << "Server socket closed" << std::endl;
+}
+
+void Server::add_client(ClientConn &c)
+{
+	client_mutex.lock();
+	clients.insert(c);
+	client_mutex.unlock();
+}
+
+void Server::remove_client(ClientConn &c)
+{
+	auto cdata = clients.find(c);
+
+	if (cdata != clients.end())
+		send_message_to_clients("User " + std::string(cdata->nickname) + " was disconnected from the room");
+
+	client_mutex.lock();
+	clients.erase(c);
+	client_mutex.unlock();
 }
 
 bool Server::init()
@@ -140,10 +151,7 @@ int Server::getClientMessages()
 
 			ClientConn c(sock_client, cm.nickname);
 
-			client_mutex.lock();
-			clients.insert(c);
-			client_mutex.unlock();
-
+			add_client(c);
 			send_message_to_clients("User " + std::string(c.nickname) + " entered in the room");
 
 			return sock_client;
