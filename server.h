@@ -2,6 +2,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
+#include <mutex>
 #include <unordered_set>
 
 class ClientConn
@@ -39,4 +40,5 @@ private:
 	int sock_client;
 	struct sockaddr_in server;
 	std::unordered_set<ClientConn, Hash> clients;
+	std::mutex client_mutex;
 };

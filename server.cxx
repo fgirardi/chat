@@ -16,9 +16,6 @@ TODO:
 * Convert chat_message into a class
 */
 
-/* file descriptors of sockets */
-pthread_mutex_t messages_lock;
-
 #ifdef CHAT_VERBOSE
 void do_verbose(std::string msg)
 {
@@ -31,7 +28,7 @@ void do_verbose(std::string) {}
 
 void Server::send_message_to_clients(std::string msg)
 {
-	pthread_mutex_lock(&messages_lock);
+	client_mutex.lock();
 
 	struct chat_message cm;
 	cm.type = SERVER_MESSAGE;
@@ -43,7 +40,7 @@ void Server::send_message_to_clients(std::string msg)
 		send(c.sockid, &cm, sizeof(cm), 0);
 	}
 
-	pthread_mutex_unlock(&messages_lock);
+	client_mutex.unlock();
 }
 
 void Server::recv_messages(int sockfd)
@@ -76,9 +73,9 @@ void Server::recv_messages(int sockfd)
 	if (cdata != clients.end())
 		send_message_to_clients("User " + std::string(cdata->nickname) + " was disconnected from the room");
 
-	pthread_mutex_lock(&messages_lock);
+	client_mutex.lock();
 	clients.erase(c);
-	pthread_mutex_unlock(&messages_lock);
+	client_mutex.unlock();
 }
 
 ClientConn::ClientConn(int sockid, std::string name)
@@ -143,10 +140,9 @@ int Server::getClientMessages()
 
 			ClientConn c(sock_client, cm.nickname);
 
-			// protect fds create with lock
-			pthread_mutex_lock(&messages_lock);
+			client_mutex.lock();
 			clients.insert(c);
-			pthread_mutex_unlock(&messages_lock);
+			client_mutex.unlock();
 
 			send_message_to_clients("User " + std::string(c.nickname) + " entered in the room");
 
