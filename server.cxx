@@ -16,16 +16,6 @@ TODO:
 * Convert chat_message into a class
 */
 
-#ifdef CHAT_VERBOSE
-void do_verbose(std::string msg)
-{
-	std::cout << msg << std::endl;
-}
-
-#else
-void do_verbose(std::string) {}
-#endif
-
 void Server::send_message_to_clients(std::string msg)
 {
 	client_mutex.lock();
