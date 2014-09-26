@@ -53,8 +53,6 @@ void Server::recv_messages(int sockfd)
 			send_message_to_clients("[" + std::string(cm.nickname) + "]: " + std::string(cm.msg));
 	}
 
-	do_verbose("server: socket " + std::to_string(sockfd) + " closed. Removing from clients list");
-
 	// just to remove the sockfd from clients
 	ClientConn c(sockfd, "");
 	remove_client(c);
@@ -84,15 +82,17 @@ void Server::add_client(ClientConn &c)
 	client_mutex.unlock();
 }
 
-void Server::remove_client(ClientConn &c)
+void Server::remove_client(ClientConn &cli)
 {
-	auto cdata = clients.find(c);
-
-	if (cdata != clients.end())
-		send_message_to_clients("User " + std::string(cdata->nickname) + " was disconnected from the room");
-
 	client_mutex.lock();
-	clients.erase(c);
+	auto c = clients.find(cli);
+
+	if (c != clients.end()) {
+		do_verbose("server: socket " + std::to_string(c->sockid) + " closed. Removing from clients list");
+		send_message_to_clients("User " + std::string(c->nickname) + " was disconnected from the room");
+	}
+
+	clients.erase(cli);
 	client_mutex.unlock();
 }
 
