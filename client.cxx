@@ -108,7 +108,7 @@ void Client::recv_msgs()
 	}
 }
 
-void helpMessage()
+void Client::helpMessage()
 {
 	std::cout << "You need to give the address number and nickname as argument!" << std::endl;
 	exit(1);
@@ -117,7 +117,7 @@ void helpMessage()
 int main(int argc, char *argv[])
 {
 	if (argc < 3)
-		helpMessage();
+		Client::helpMessage();
 
 	Client client(argv[2]);
 

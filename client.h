@@ -14,6 +14,7 @@ public:
 	bool send_register_message();
 	bool send_user_message();
 	void recv_msgs();
+	static void helpMessage();
 
 private:
 	int sock_server;
