@@ -41,11 +41,25 @@ void init_screen()
 	scrollok(messages_window, TRUE);
 }
 
-void get_user_input(std::vector<char> &user_data)
+std::string get_user_input()
 {
 	werase(user_data_window);
 	box(user_data_window, 0, 0);
 	wmove(user_data_window, 1, 1);
 	wrefresh(user_data_window);
-	wgetnstr(user_data_window, &user_data[0], 100);
+
+	std::vector<char> user_data;
+
+	while (true) {
+		int key = wgetch(user_data_window);
+
+		if (key == '\n')
+			break;
+
+		user_data.push_back(static_cast<char>(key));
+	}
+
+	std::string retstr(user_data.begin(), user_data.end());
+
+	return retstr;
 }

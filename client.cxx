@@ -63,10 +63,7 @@ bool Client::send_user_message()
 	struct chat_message cm = {.type = SEND_MESSAGE };
 	strcpy(cm.nickname, nickname.c_str());
 
-	std::vector<char> msg(100);
-	get_user_input(msg);
-
-	std::string nmsg(msg.begin(), msg.end());
+	std::string nmsg = get_user_input();
 
 	strcpy(cm.msg, nmsg.c_str());
 	cm.msg[strlen(cm.msg)] = '\0';

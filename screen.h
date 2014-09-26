@@ -12,6 +12,6 @@ void add_message(std::string msg);
 void init_screen();
 void end_screen();
 
-void get_user_input(std::vector<char> &user_data);
+std::string get_user_input();
 
 #endif //__SCREEN_H__
