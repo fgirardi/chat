@@ -1,4 +1,5 @@
 AC_INIT([chat], [0.01])
+AC_CONFIG_SRCDIR([src])
 AM_INIT_AUTOMAKE([1.11 -Wall -Werror])
 AC_CONFIG_FILES([Makefile])
 AC_PROG_CXX
