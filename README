@@ -1,0 +1,23 @@
+ch@t
+====
+
+This is a simple chat application.
+
+Building software
+=================
+
+Ch@t needs autotools to be compiled. In Fedora systems:
+
+	sudo yum install autoconf automake
+
+will install the tools needed. First of all you need to run:
+
+	./autogen.sh
+
+This will create the configure script that checks if your system
+has the dependencies needed to built ch@t. After that:
+
+	./configure
+	make
+
+This is create two binaries: server and client.
