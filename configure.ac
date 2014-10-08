@@ -1,4 +1,4 @@
-AC_INIT([chat], [0.01])
+AC_INIT([chat], [0.01], [], [], [http://github.com/marcosps/chat])
 
 AC_CHECK_HEADER([ncurses.h], [],
 	[AC_MSG_ERROR(ncurses.h not found)])
