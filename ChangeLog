@@ -1,4 +1,8 @@
-10-08-2014:
+07-10-2014: Marcos Paulo de Souza <marcos.souza.org@gmail.com>
+	autotools:
+		Implemented autotools as a replacement of a Makefile
+
+10-08-2014: Marcos Paulo de Souza <marcos.souza.org@gmail.com>
 	Server:
 		Managed user session. When a user disconnects, the resources
 		in server are released
