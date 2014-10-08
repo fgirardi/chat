@@ -1,7 +1,4 @@
 #!/bin/sh
-
-if [ ! -f configure ]; then
-	autoreconf --force -i
-fi
+autoreconf --force -i
 
 ./configure $@
