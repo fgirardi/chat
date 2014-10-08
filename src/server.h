@@ -45,7 +45,7 @@ private:
 	std::mutex client_mutex;
 };
 
-#ifdef CHAT_VERBOSE
+#ifdef ENABLE_VERBOSE
 void do_verbose(std::string msg)
 {
 	std::cout << msg << std::endl;
