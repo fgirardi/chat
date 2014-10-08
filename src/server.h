@@ -44,13 +44,3 @@ private:
 	std::unordered_set<ClientConn, Hash> clients;
 	std::mutex client_mutex;
 };
-
-#ifdef ENABLE_VERBOSE
-void do_verbose(std::string msg)
-{
-	std::cout << msg << std::endl;
-}
-
-#else
-void do_verbose(std::string) {}
-#endif

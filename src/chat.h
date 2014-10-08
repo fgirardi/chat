@@ -3,7 +3,6 @@
 
 #define CHAT_PORT 9090
 #define CHAT_OK "OK"
-#define CHAT_NOK "NOK"
 
 enum modes {
 	REGISTER,
@@ -16,5 +15,14 @@ struct chat_message {
 	char msg[100];
 	char nickname[15];
 };
+
+#ifdef ENABLE_VERBOSE
+void do_verbose(std::string msg)
+{
+	std::cout << msg << std::endl;
+}
+#else
+void do_verbose(std::string) {}
+#endif
 
 #endif //__CHAT_H__
