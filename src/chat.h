@@ -4,6 +4,8 @@
 #define CHAT_PORT 9090
 #define CHAT_OK "OK"
 
+#include <iostream>
+
 enum modes {
 	REGISTER,
 	SEND_MESSAGE,
