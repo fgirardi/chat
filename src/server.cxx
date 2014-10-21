@@ -6,7 +6,11 @@
 #include <string.h>
 #include <strings.h>
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/epoll.h>
 #include <unistd.h>
+
+#include <fcntl.h>
 
 #include "chat.h"
 #include "server.h"
@@ -15,6 +19,8 @@
 TODO:
 * Convert chat_message into a class
 */
+
+#define MAX_EVENTS 100
 
 void Server::send_message_to_clients(std::string msg)
 {
@@ -31,31 +37,6 @@ void Server::send_message_to_clients(std::string msg)
 	}
 
 	client_mutex.unlock();
-}
-
-void Server::recv_messages(int sockfd)
-{
-	struct chat_message cm;
-	while (1)
-	{
-		int size = recv(sockfd, &cm, sizeof(cm), 0);
-
-		// in case of socket error, remove the socket from the clients
-		if (size <= 0)
-			break;
-
-		do_verbose("server: Received msg user " + std::string(cm.nickname) +
-				+ " socket " + std::to_string(sockfd)
-				+ " size " + std::to_string(size)
-				+ ": " + std::string(cm.msg));
-
-		if (cm.type == SEND_MESSAGE && size > 0)
-			send_message_to_clients("[" + std::string(cm.nickname) + "]: " + std::string(cm.msg));
-	}
-
-	// just to remove the sockfd from clients
-	ClientConn c(sockfd, "");
-	remove_client(c);
 }
 
 ClientConn::ClientConn(int sockid, std::string name)
@@ -87,7 +68,6 @@ void Server::add_client(ClientConn &c)
 
 void Server::remove_client(ClientConn &cli)
 {
-	client_mutex.lock();
 	auto c = clients.find(cli);
 
 	if (c != clients.end()) {
@@ -95,6 +75,7 @@ void Server::remove_client(ClientConn &cli)
 		send_message_to_clients("User " + std::string(c->nickname) + " was disconnected from the room");
 	}
 
+	client_mutex.lock();
 	clients.erase(cli);
 	client_mutex.unlock();
 }
@@ -120,35 +101,97 @@ bool Server::init()
 	return true;
 }
 
-int Server::getClientMessages()
+void Server::handleMessages()
 {
-	struct sockaddr_in client;
+	struct epoll_event ev, events[MAX_EVENTS];
 
-	socklen_t client_len = sizeof(client);
-	sock_client = accept(sock_server, (struct sockaddr *)&client, &client_len);
-
-	struct chat_message cm;
-	recv(sock_client, &cm, sizeof(cm), 0);
-
-	do_verbose("server: Connection accept socked " + std::to_string(sock_client));
-
-	if (cm.type == REGISTER)
-	{
-		char msg[5];
-		sprintf(msg, "%s", CHAT_OK);
-		send(sock_client, &msg, sizeof(msg), 0); 
-
-		if (!strcmp(msg, CHAT_OK))
-		{
-			ClientConn c(sock_client, cm.nickname);
-
-			add_client(c);
-
-			return sock_client;
-		}
+	int epollfd = epoll_create1(0);
+	if (epollfd == -1) {
+		do_verbose("epoll_create error");
+		return;
 	}
 
-	return 0;
+	ev.events = EPOLLIN;
+	ev.data.fd = sock_server;
+	if (epoll_ctl(epollfd, EPOLL_CTL_ADD, sock_server, &ev) == -1) {
+		do_verbose("epoll_ctl: listen socket");
+		return;
+	}
+
+	while (true) {
+		int n = epoll_wait(epollfd, events, MAX_EVENTS, -1);
+		if (n == -1) {
+			do_verbose("epoll_wait");
+			return;
+		}
+
+		for (int i = 0; i < n; i++) {
+			// handle new connections into server
+			if (events[i].data.fd == sock_server) {
+				struct sockaddr_in client;
+
+				socklen_t client_len = sizeof(client);
+				sock_client = accept(sock_server, (struct sockaddr *)&client, &client_len);
+
+				if (sock_client == -1) {
+					do_verbose("accept");
+					return;
+				}
+
+				//setnonblocking
+				int flags = fcntl(sock_client, F_GETFL, 0);
+				fcntl(sock_client, F_SETFL, flags | O_NONBLOCK);
+
+				do_verbose("server: Connection accept socked " + std::to_string(sock_client));
+
+				ev.events = EPOLLIN | EPOLLOUT;
+				ev.data.fd = sock_client;
+				if (epoll_ctl(epollfd, EPOLL_CTL_ADD, sock_client, &ev) == -1) {
+					do_verbose("epoll_ctl: sock client");
+					return;
+				}
+			} else {
+				// handle existing connections
+				struct chat_message cm;
+
+				// get the client fd
+				sock_client = events[i].data.fd;
+
+				int n = recv(sock_client, &cm, sizeof(cm), 0);
+
+				if (n == 0) {
+					ClientConn c(sock_client, cm.nickname);
+					remove_client(c);
+					close(sock_client);
+					continue;
+				}
+
+				// we don't have data on this fd, skip for now
+				if (n < 0 && errno == EAGAIN)
+					continue;
+
+				if (cm.type == REGISTER)
+				{
+					char msg[5];
+					sprintf(msg, "%s", CHAT_OK);
+					send(sock_client, &msg, sizeof(msg), 0);
+
+					if (!strcmp(msg, CHAT_OK))
+					{
+						ClientConn c(sock_client, cm.nickname);
+						add_client(c);
+					}
+				} else if (cm.type == SEND_MESSAGE) {
+					do_verbose("server: Received msg user " + std::string(cm.nickname) +
+							+ " socket " + std::to_string(sock_client)
+							+ " size " + std::to_string(n)
+							+ ": " + std::string(cm.msg));
+
+					send_message_to_clients("[" + std::string(cm.nickname) + "]: " + std::string(cm.msg));
+				}
+			}
+		}
+	}
 }
 
 int main()
@@ -158,13 +201,7 @@ int main()
 	if (!server.init())
 		return 1;
 
-	while (true) {
-		int sock_client = server.getClientMessages();
-		if (sock_client == 0)
-			break;
+	server.handleMessages();
 
-		std::thread t(&Server::recv_messages, &server, sock_client);
-		t.detach();
-	}
 	return 0;
 }

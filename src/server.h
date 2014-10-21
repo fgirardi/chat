@@ -32,8 +32,7 @@ public:
 	~Server();
 	bool init();
 	void finish();
-	int getClientMessages();
-	void recv_messages(int sockfd);
+	void handleMessages();
 	void send_message_to_clients(std::string msg);
 	void add_client(ClientConn &c);
 	void remove_client(ClientConn &c);
