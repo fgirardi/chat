@@ -1,4 +1,4 @@
-AC_INIT([chat], [0.01], [], [], [http://github.com/marcosps/chat])
+AC_INIT([chat], [0.02], [], [], [http://github.com/marcosps/chat])
 
 AC_CHECK_LIB([ncurses], [initscr], [:],
 	[AC_MSG_ERROR(ncurses library not found. Install ncurses-devel package)])
