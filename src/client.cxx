@@ -65,6 +65,10 @@ bool Client::send_user_message()
 
 	std::string nmsg = get_user_input();
 
+	// avoid sending empty strings to server
+	if (nmsg.empty())
+		return true;
+
 	strcpy(cm.msg, nmsg.c_str());
 	cm.msg[strlen(cm.msg)] = '\0';
 
