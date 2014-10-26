@@ -46,16 +46,7 @@ bool Client::send_register_message()
 
 	if (send(sock_server, &cm, sizeof(cm), 0) == -1)
 		return false;
-
-	char ret[100];
-
-	if (recv(sock_server, &ret, sizeof(ret), 0) <= 0)
-		return false;
-
-	if (!strcmp(ret, CHAT_OK))
-		return true;
-
-	return false;
+	return true;
 }
 
 bool Client::send_user_message()

@@ -172,15 +172,9 @@ void Server::handleMessages()
 
 				if (cm.type == REGISTER)
 				{
-					char msg[5];
-					sprintf(msg, "%s", CHAT_OK);
-					send(sock_client, &msg, sizeof(msg), 0);
+					ClientConn c(sock_client, cm.nickname);
+					add_client(c);
 
-					if (!strcmp(msg, CHAT_OK))
-					{
-						ClientConn c(sock_client, cm.nickname);
-						add_client(c);
-					}
 				} else if (cm.type == SEND_MESSAGE) {
 					do_verbose("server: Received msg user " + std::string(cm.nickname) +
 							+ " socket " + std::to_string(sock_client)
