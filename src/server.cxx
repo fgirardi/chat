@@ -56,8 +56,9 @@ Server::~Server()
 	std::cout << "Server socket closed" << std::endl;
 }
 
-void Server::add_client(ClientConn &c)
+void Server::add_client(int sock_client, char* nickname)
 {
+	ClientConn c(sock_client, nickname);
 	do_verbose("server: Connection successful socket " + std::to_string(sock_client));
 	send_message_to_clients("User " + std::string(c.nickname) + " entered in the room");
 
@@ -66,8 +67,10 @@ void Server::add_client(ClientConn &c)
 	client_mutex.unlock();
 }
 
-void Server::remove_client(ClientConn &cli)
+void Server::remove_client(int sock_client, char *nickname)
 {
+	ClientConn cli(sock_client, nickname);
+
 	auto c = clients.find(cli);
 
 	if (c != clients.end()) {
@@ -78,6 +81,9 @@ void Server::remove_client(ClientConn &cli)
 	client_mutex.lock();
 	clients.erase(cli);
 	client_mutex.unlock();
+
+	// close client socket
+	close(sock_client);
 }
 
 bool Server::init()
@@ -160,9 +166,7 @@ void Server::handleMessages()
 				int n = recv(sock_client, &cm, sizeof(cm), 0);
 
 				if (n == 0) {
-					ClientConn c(sock_client, cm.nickname);
-					remove_client(c);
-					close(sock_client);
+					remove_client(sock_client, cm.nickname);
 					continue;
 				}
 
@@ -172,8 +176,7 @@ void Server::handleMessages()
 
 				if (cm.type == REGISTER)
 				{
-					ClientConn c(sock_client, cm.nickname);
-					add_client(c);
+					add_client(sock_client, cm.nickname);
 
 				} else if (cm.type == SEND_MESSAGE) {
 					do_verbose("server: Received msg user " + std::string(cm.nickname) +

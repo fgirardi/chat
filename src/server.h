@@ -34,8 +34,8 @@ public:
 	void finish();
 	void handleMessages();
 	void send_message_to_clients(std::string msg);
-	void add_client(ClientConn &c);
-	void remove_client(ClientConn &c);
+	void add_client(int sock_client, char *nickname);
+	void remove_client(int sock_client, char *nickname);
 private:
 	int sock_server;
 	int sock_client;
