@@ -2,7 +2,6 @@
 #define __CHAT_H__
 
 #define CHAT_PORT 9090
-#define CHAT_OK "OK"
 
 #include <iostream>
 
