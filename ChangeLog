@@ -1,3 +1,7 @@
+30-10-2014: Marcos Paulo de Souza <marcos.souza.org@gmail.com>
+	Client:
+		Don't exit in the case server is offline
+
 20-10-2014: Marcos Paulo de Souza <marcos.souza.org@gmail.com>
 	Server:
 		Replace thread usages with epoll system call
