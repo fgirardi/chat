@@ -8,11 +8,13 @@
 #include <thread>
 #include <vector>
 
-Client::Client(std::string nick)
+Client::Client(std::string addr, std::string nick)
 {
 	sock_server = 0;
 	bzero(&server_addr, sizeof(server_addr));
+	address = addr;
 	nickname = nick;
+	connected = false;
 }
 
 Client::~Client()
@@ -21,12 +23,12 @@ Client::~Client()
 		close(sock_server);
 }
 
-bool Client::server_connect(std::string address)
+void Client::server_connect()
 {
 	sock_server = socket(PF_INET, SOCK_STREAM, 0);
 
 	if (sock_server == -1)
-		return false;
+		return;
 
 	server_addr.sin_family = PF_INET;
 	server_addr.sin_port = htons(CHAT_PORT);
@@ -34,22 +36,18 @@ bool Client::server_connect(std::string address)
 
 	if (connect(sock_server, (struct sockaddr *)&server_addr,
 					(socklen_t)sizeof(server_addr)))
-		return false;
+		return;
 
-	return true;
-}
-
-bool Client::send_register_message()
-{
 	struct chat_message cm = {.type = REGISTER };
 	strcpy(cm.nickname, nickname.c_str());
 
 	if (send(sock_server, &cm, sizeof(cm), 0) == -1)
-		return false;
-	return true;
+		return;
+
+	connected = true;
 }
 
-bool Client::send_user_message()
+void Client::send_user_message()
 {
 	struct chat_message cm = {.type = SEND_MESSAGE };
 	strcpy(cm.nickname, nickname.c_str());
@@ -58,29 +56,40 @@ bool Client::send_user_message()
 
 	// avoid sending empty strings to server
 	if (nmsg.empty())
-		return true;
+		return;
+
+	if (!connected) {
+		add_message("Server is offline...");
+		return;
+	}
 
 	strcpy(cm.msg, nmsg.c_str());
 	cm.msg[strlen(cm.msg)] = '\0';
 
-	if (send(sock_server, &cm, sizeof(cm), 0) == -1) {
-		std::cout << "Error while sending message to server. Aborting...\n";
-		return false;
-	}
-
-	return true;
+	if (send(sock_server, &cm, sizeof(cm), 0) == -1)
+		std::cout << "Error while sending message to server...";
 }
 
 void Client::recv_msgs()
 {
 	struct chat_message cm;
 
+
 	while (1)
 	{
+		while (!connected) {
+			add_message("Server is offline. Trying to connect in 2 two seconds");
+			sleep(2);
+			server_connect();
+
+			if (connected)
+				add_message("Reconnected to server");
+		}
+
 		/* stop on error or server closes the socket */
 		if (recv(sock_server, &cm, sizeof(cm), 0) <= 0) {
-			std::cout << "Error while trying to receive message from server. Aborting..." << std::endl;
-			break;
+			connected = false;
+			continue;
 		}
 
 		if (cm.type == SERVER_MESSAGE)
@@ -111,27 +120,21 @@ int main(int argc, char *argv[])
 	if (argc < 3)
 		Client::helpMessage();
 
-	Client client(argv[2]);
-
-	if (!client.server_connect(argv[1])) {
-		perror("Can't connect to server");
-		return 1;
-	}
+	Client client(argv[1], argv[2]);
 
 	init_screen();
 
-	if (client.send_register_message())
-	{
-		add_message("Received OK from server...");
+	// first attempt to connect
+	client.server_connect();
+	if (client.isConnected())
+		add_message("Connected to server");
 
-		std::thread recv_msgs(&Client::recv_msgs, &client);
+	std::thread recv_msgs(&Client::recv_msgs, &client);
 
-		while (1)
-			if (!client.send_user_message())
-				break;
+	while (1)
+		client.send_user_message();
 
-		recv_msgs.join();
-	}
+	recv_msgs.join();
 
 	end_screen();
 

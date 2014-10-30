@@ -8,16 +8,18 @@
 class Client
 {
 public:
-	Client(std::string nickname);
+	Client(std::string addr, std::string nickname);
 	~Client();
-	bool server_connect(std::string);
-	bool send_register_message();
-	bool send_user_message();
+	void server_connect();
+	void send_user_message();
 	void recv_msgs();
 	static void helpMessage();
+	bool isConnected() { return connected; }
 
 private:
+	bool connected;
 	int sock_server;
 	struct sockaddr_in server_addr;
+	std::string address;
 	std::string nickname;
 };
