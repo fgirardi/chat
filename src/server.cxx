@@ -1,10 +1,13 @@
+#include <csignal>
 #include <iostream>
 #include <thread>
 #include <unordered_set>
 
+#include <errno.h>
 #include <signal.h>
 #include <string.h>
 #include <strings.h>
+#include <stdlib.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/epoll.h>
@@ -21,6 +24,9 @@ TODO:
 */
 
 #define MAX_EVENTS 100
+
+// used by signal to close the socket when receiving a SIGINT
+int server_socket = 0;
 
 void Server::send_message_to_clients(std::string msg)
 {
@@ -90,19 +96,33 @@ bool Server::init()
 {
 	sock_server = socket(PF_INET, SOCK_STREAM, 0);
 
-	if (sock_server == -1)
+	if (sock_server == -1) {
+		perror("socket");
 		return false;
+	}
+
+	int opt =1;
+	if (setsockopt(sock_server, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int)) == -1) {
+		perror("setsockopt");
+		return false;
+	}
+
+	server_socket = sock_server;
 
 	bzero(&server, sizeof(server));
 	server.sin_family = PF_INET;
 	server.sin_port = htons(CHAT_PORT);
 	server.sin_addr.s_addr = INADDR_ANY;
 
-	if (bind(sock_server, (struct sockaddr *)&server, sizeof(server)))
+	if (bind(sock_server, (struct sockaddr *)&server, sizeof(server))) {
+		perror("bind");
 		return false;
+	}
 
-	if (listen(sock_server, 5))
+	if (listen(sock_server, 5)) {
+		perror("listen");
 		return false;
+	}
 
 	return true;
 }
@@ -191,9 +211,20 @@ void Server::handleMessages()
 	}
 }
 
+void sigHandler(int signal)
+{
+	(void)signal;
+	if (server_socket)
+		close(server_socket);
+
+	exit(EXIT_SUCCESS);
+}
+
 int main()
 {
 	Server server;
+
+	std::signal(SIGINT, sigHandler);
 
 	if (!server.init())
 		return 1;
