@@ -184,7 +184,7 @@ CFLAGS = @CFLAGS@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
 CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = @CXXFLAGS@
+CXXFLAGS = -std=c++0x -Werror -Wall -fsanitize=address
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
@@ -261,10 +261,10 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 server_SOURCES = server.cxx server.h chat.h
 server_LDFLAGS = -lpthread
-server_CXXFLAGS = -std=c++0x -Werror -Wall
+server_CXXFLAGS = $(CXXFLAGS)
 client_SOURCES = client.cxx client.h screen.cxx screen.h chat.h
 client_LDFLAGS = -lncurses -lpthread
-client_CXXFLAGS = -std=c++0x -Werror -Wall
+client_CXXFLAGS = $(CXXFLAGS)
 all: all-am
 
 .SUFFIXES:
