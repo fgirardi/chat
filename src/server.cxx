@@ -231,9 +231,9 @@ int main()
 	std::signal(SIGINT, sigHandler);
 
 	if (!server.init())
-		return 1;
+		exit(EXIT_FAILURE);
 
 	server.handleMessages();
 
-	return 0;
+	exit(EXIT_SUCCESS);
 }

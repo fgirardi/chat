@@ -2,6 +2,7 @@
 #include "client.h"
 #include "screen.h"
 
+#include <stdlib.h>
 #include <string.h>
 #include <strings.h>
 #include <unistd.h>
@@ -78,7 +79,7 @@ void Client::recv_msgs()
 {
 	struct chat_message cm;
 
-	while (1)
+	while (true)
 	{
 		while (!connected) {
 			add_message("Server is offline. Trying to connect in 2 two seconds");
@@ -123,7 +124,7 @@ void Client::add_message_to_window(std::string msg, bool add_nickname)
 void Client::helpMessage()
 {
 	std::cout << "You need to give the address number and nickname as argument!" << std::endl;
-	exit(1);
+	exit(EXIT_FAILURE);
 }
 
 int main(int argc, char *argv[])
@@ -148,5 +149,5 @@ int main(int argc, char *argv[])
 
 	end_screen();
 
-	return 0;
+	exit(EXIT_SUCCESS);
 }
