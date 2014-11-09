@@ -33,7 +33,7 @@ public:
 	bool init();
 	void finish();
 	void handleMessages();
-	void send_message_to_clients(std::string msg);
+	void send_message_to_clients(int sock_client, std::string msg);
 	void add_client(int sock_client, char *nickname);
 	void remove_client(int sock_client, char *nickname);
 private:

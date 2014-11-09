@@ -12,9 +12,10 @@ public:
 	~Client();
 	void server_connect();
 	void send_user_message();
+	void add_message_to_window(std::string msg, bool add_nickname = false);
 	void recv_msgs();
-	static void helpMessage();
 	bool isConnected() { return connected; }
+	static void helpMessage();
 
 private:
 	bool connected;

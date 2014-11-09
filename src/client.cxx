@@ -67,6 +67,8 @@ void Client::send_user_message()
 		strcpy(cm.msg, nmsg.c_str());
 		cm.msg[strlen(cm.msg)] = '\0';
 
+		add_message_to_window(std::string(cm.msg), true);
+
 		if (send(sock_server, &cm, sizeof(cm), 0) == -1)
 			std::cout << "Error while sending message to server...";
 	}
@@ -75,7 +77,6 @@ void Client::send_user_message()
 void Client::recv_msgs()
 {
 	struct chat_message cm;
-
 
 	while (1)
 	{
@@ -95,20 +96,28 @@ void Client::recv_msgs()
 		}
 
 		if (cm.type == SERVER_MESSAGE)
-		{
-			time_t t = time(NULL);
-			struct tm *tm = localtime(&t);
-
-			std::string msg = std::to_string(tm->tm_mday) + "/" +
-						std::to_string(tm->tm_mon + 1) + "/" +
-						std::to_string(tm->tm_year + 1900) + " " +
-						std::to_string(tm->tm_hour) + ":" +
-						std::to_string(tm->tm_min) + ":" +
-						std::to_string(tm->tm_sec) + " " + cm.msg;
-
-			add_message(msg);
-		}
+			add_message_to_window(std::string(cm.msg));
 	}
+}
+
+void Client::add_message_to_window(std::string msg, bool add_nickname)
+{
+	time_t t = time(NULL);
+	struct tm *tm = localtime(&t);
+
+	std::string nmsg = std::to_string(tm->tm_mday) + "/" +
+			std::to_string(tm->tm_mon + 1) + "/" +
+			std::to_string(tm->tm_year + 1900) + " " +
+			std::to_string(tm->tm_hour) + ":" +
+			std::to_string(tm->tm_min) + ":" +
+			std::to_string(tm->tm_sec) + " ";
+
+	if (add_nickname)
+		nmsg += "[" + nickname + "]: ";
+
+	nmsg += msg;
+
+	add_message(nmsg);
 }
 
 void Client::helpMessage()

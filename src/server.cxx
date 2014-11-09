@@ -28,7 +28,7 @@ TODO:
 // used by signal to close the socket when receiving a SIGINT
 int server_socket = 0;
 
-void Server::send_message_to_clients(std::string msg)
+void Server::send_message_to_clients(int sock_client, std::string msg)
 {
 	client_mutex.lock();
 
@@ -38,6 +38,10 @@ void Server::send_message_to_clients(std::string msg)
 
 	for (auto c : clients)
 	{
+		// skip the client who sent the message
+		if (c.sockid == sock_client)
+			continue;
+
 		do_verbose("server: send message to socket " + std::to_string(c.sockid));
 		send(c.sockid, &cm, sizeof(cm), 0);
 	}
@@ -66,7 +70,7 @@ void Server::add_client(int sock_client, char* nickname)
 {
 	ClientConn c(sock_client, nickname);
 	do_verbose("server: Connection successful socket " + std::to_string(sock_client));
-	send_message_to_clients("User " + std::string(c.nickname) + " entered in the room");
+	send_message_to_clients(sock_client, "User " + std::string(c.nickname) + " entered in the room");
 
 	client_mutex.lock();
 	clients.insert(c);
@@ -81,7 +85,7 @@ void Server::remove_client(int sock_client, char *nickname)
 
 	if (c != clients.end()) {
 		do_verbose("server: socket " + std::to_string(c->sockid) + " closed. Removing from clients list");
-		send_message_to_clients("User " + std::string(c->nickname) + " was disconnected from the room");
+		send_message_to_clients(sock_client, "User " + std::string(c->nickname) + " was disconnected from the room");
 	}
 
 	client_mutex.lock();
@@ -204,7 +208,7 @@ void Server::handleMessages()
 							+ " size " + std::to_string(n)
 							+ ": " + std::string(cm.msg));
 
-					send_message_to_clients("[" + std::string(cm.nickname) + "]: " + std::string(cm.msg));
+					send_message_to_clients(sock_client, "[" + std::string(cm.nickname) + "]: " + std::string(cm.msg));
 				}
 			}
 		}
