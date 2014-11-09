@@ -49,25 +49,27 @@ void Client::server_connect()
 
 void Client::send_user_message()
 {
-	struct chat_message cm = {.type = SEND_MESSAGE };
-	strcpy(cm.nickname, nickname.c_str());
+	while (true) {
+		struct chat_message cm = {.type = SEND_MESSAGE };
+		strcpy(cm.nickname, nickname.c_str());
 
-	std::string nmsg = get_user_input();
+		std::string nmsg = get_user_input();
 
-	// avoid sending empty strings to server
-	if (nmsg.empty())
-		return;
+		// avoid sending empty strings to server
+		if (nmsg.empty())
+			continue;
 
-	if (!connected) {
-		add_message("Server is offline...");
-		return;
+		if (!connected) {
+			add_message("Server is offline...");
+			continue;
+		}
+
+		strcpy(cm.msg, nmsg.c_str());
+		cm.msg[strlen(cm.msg)] = '\0';
+
+		if (send(sock_server, &cm, sizeof(cm), 0) == -1)
+			std::cout << "Error while sending message to server...";
 	}
-
-	strcpy(cm.msg, nmsg.c_str());
-	cm.msg[strlen(cm.msg)] = '\0';
-
-	if (send(sock_server, &cm, sizeof(cm), 0) == -1)
-		std::cout << "Error while sending message to server...";
 }
 
 void Client::recv_msgs()
@@ -131,8 +133,7 @@ int main(int argc, char *argv[])
 
 	std::thread recv_msgs(&Client::recv_msgs, &client);
 
-	while (1)
-		client.send_user_message();
+	client.send_user_message();
 
 	recv_msgs.join();
 
