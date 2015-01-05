@@ -1,6 +1,6 @@
 bin_PROGRAMS = server client
 
-CXXFLAGS = -std=c++0x -Werror -Wall -fsanitize=address
+AM_CXXFLAGS = -std=c++0x -Werror -Wall -fsanitize=address
 
 server_SOURCES = server.cxx server.h chat.h
 server_LDFLAGS = -lpthread
