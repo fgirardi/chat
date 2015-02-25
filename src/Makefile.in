@@ -255,7 +255,11 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+<<<<<<< HEAD
 AM_CXXFLAGS = -std=c++0x -Werror -Wall
+=======
+AM_CXXFLAGS = -std=c++0x -Werror -Wall -fsanitize=address
+>>>>>>> 21cd43582951d5bc3e7e573dc72ebdb529d60f5f
 server_SOURCES = server.cxx server.h chat.h
 server_LDFLAGS = -lpthread
 client_SOURCES = client.cxx client.h screen.cxx screen.h chat.h
