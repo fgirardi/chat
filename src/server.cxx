@@ -161,7 +161,7 @@ void Server::handleMessages()
 				struct sockaddr_in client;
 
 				socklen_t client_len = sizeof(client);
-				sock_client = accept(sock_server, (struct sockaddr *)&client, &client_len);
+				int sock_client = accept(sock_server, (struct sockaddr *)&client, &client_len);
 
 				if (sock_client == -1) {
 					do_verbose("accept");
@@ -185,7 +185,7 @@ void Server::handleMessages()
 				struct chat_message cm;
 
 				// get the client fd
-				sock_client = events[i].data.fd;
+				int sock_client = events[i].data.fd;
 
 				int n = recv(sock_client, &cm, sizeof(cm), 0);
 

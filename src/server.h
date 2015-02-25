@@ -38,7 +38,6 @@ public:
 	void remove_client(int sock_client, char *nickname);
 private:
 	int sock_server;
-	int sock_client;
 	struct sockaddr_in server;
 	std::unordered_set<ClientConn, Hash> clients;
 	std::mutex client_mutex;
