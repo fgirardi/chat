@@ -26,7 +26,7 @@ TODO:
 #define MAX_EVENTS 100
 
 // used by signal to close the socket when receiving a SIGINT
-int server_socket = 0;
+Server *server = nullptr;
 
 void Server::send_message_to_clients(int sock_client, std::string msg)
 {
@@ -61,6 +61,9 @@ Server::~Server()
 {
 	if (sock_server)
 		close(sock_server);
+
+	if (epollfd)
+		close(epollfd);
 
 	std::cout << "Server socket closed" << std::endl;
 }
@@ -116,8 +119,6 @@ bool Server::init()
 		return false;
 	}
 
-	server_socket = sock_server;
-
 	bzero(&server, sizeof(server));
 	server.sin_family = PF_INET;
 	server.sin_port = htons(CHAT_PORT);
@@ -142,7 +143,7 @@ void Server::handleMessages()
 	// silences a warning in valgrind about uninit. bytes
 	bzero(&ev, sizeof(struct epoll_event));
 
-	int epollfd = epoll_create1(0);
+	epollfd = epoll_create1(0);
 	if (epollfd == -1) {
 		do_verbose("epoll_create error");
 		return;
@@ -225,15 +226,13 @@ void Server::handleMessages()
 void sigHandler(int signal)
 {
 	(void)signal;
-	if (server_socket)
-		close(server_socket);
-
+	server->~Server();
 	exit(EXIT_SUCCESS);
 }
 
 int main()
 {
-	Server* server = Server::getInstance();
+	server = Server::getInstance();
 
 	std::signal(SIGINT, sigHandler);
 
