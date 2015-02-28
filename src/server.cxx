@@ -33,6 +33,9 @@ void Server::send_message_to_clients(int sock_client, std::string msg)
 	client_mutex.lock();
 
 	struct chat_message cm;
+	// valgrind: uninit. bytes
+	bzero(&cm, sizeof(cm));
+
 	cm.type = SERVER_MESSAGE;
 	strncpy(cm.msg, msg.c_str(), msg.size() + 1);
 
@@ -136,6 +139,8 @@ bool Server::init()
 void Server::handleMessages()
 {
 	struct epoll_event ev, events[MAX_EVENTS];
+	// silences a warning in valgrind about uninit. bytes
+	bzero(&ev, sizeof(struct epoll_event));
 
 	int epollfd = epoll_create1(0);
 	if (epollfd == -1) {
