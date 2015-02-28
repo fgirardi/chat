@@ -28,7 +28,6 @@ struct Hash
 class Server
 {
 public:
-	Server();
 	~Server();
 	bool init();
 	void finish();
@@ -36,7 +35,16 @@ public:
 	void send_message_to_clients(int sock_client, std::string msg);
 	void add_client(int sock_client, char *nickname);
 	void remove_client(int sock_client, char *nickname);
+
+	// singleton
+	static Server* getInstance();
+
 private:
+	// singleton
+	Server() {};
+	Server (Server const&);
+	Server&  operator = (const Server& s);
+
 	int sock_server;
 	struct sockaddr_in server;
 	std::unordered_set<ClientConn, Hash> clients;

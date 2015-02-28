@@ -54,16 +54,18 @@ ClientConn::ClientConn(int sockid, std::string name)
 	, nickname(name)
 {}
 
-Server::Server()
-	: sock_server(0)
-{}
-
 Server::~Server()
 {
 	if (sock_server)
 		close(sock_server);
 
 	std::cout << "Server socket closed" << std::endl;
+}
+
+Server* Server::getInstance()
+{
+	static Server* instance = new Server();
+	return instance;
 }
 
 void Server::add_client(int sock_client, char* nickname)
@@ -226,14 +228,14 @@ void sigHandler(int signal)
 
 int main()
 {
-	Server server;
+	Server* server = Server::getInstance();
 
 	std::signal(SIGINT, sigHandler);
 
-	if (!server.init())
+	if (!server->init())
 		exit(EXIT_FAILURE);
 
-	server.handleMessages();
+	server->handleMessages();
 
 	exit(EXIT_SUCCESS);
 }
