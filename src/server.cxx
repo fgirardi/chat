@@ -226,7 +226,7 @@ void Server::handleMessages()
 void sigHandler(int signal)
 {
 	(void)signal;
-	server->~Server();
+	delete server;
 	exit(EXIT_SUCCESS);
 }
 
@@ -241,5 +241,6 @@ int main()
 
 	server->handleMessages();
 
-	exit(EXIT_SUCCESS);
+	delete server;
+	return EXIT_SUCCESS;
 }
