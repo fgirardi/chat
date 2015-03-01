@@ -52,19 +52,22 @@ void Client::server_connect()
 void Client::send_user_message()
 {
 	while (true) {
-		struct chat_message cm = {.type = SEND_MESSAGE };
-		strcpy(cm.nickname, nickname.c_str());
-
 		std::string nmsg = get_user_input();
 
 		// avoid sending empty strings to server
 		if (nmsg.empty())
 			continue;
 
+		if (nmsg == "/exit")
+			break;
+
 		if (!connected) {
 			add_message("Server is offline...");
 			continue;
 		}
+
+		struct chat_message cm = {.type = SEND_MESSAGE };
+		strcpy(cm.nickname, nickname.c_str());
 
 		strcpy(cm.msg, nmsg.c_str());
 		cm.msg[strlen(cm.msg)] = '\0';
@@ -80,8 +83,7 @@ void Client::recv_msgs()
 {
 	struct chat_message cm;
 
-	while (true)
-	{
+	while (true) {
 		while (!connected) {
 			add_message("Server is offline. Trying to connect in 2 two seconds");
 			sleep(2);
@@ -144,10 +146,9 @@ int main(int argc, char *argv[])
 		add_message("Connected to server");
 
 	std::thread recv_msgs(&Client::recv_msgs, &client);
+	recv_msgs.detach();
 
 	client.send_user_message();
-
-	recv_msgs.join();
 
 	end_screen();
 
