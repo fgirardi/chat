@@ -18,31 +18,40 @@ WINDOW *create_win(int h, int w, int starty, int startx, int with_box)
 
 void add_message(std::string msg)
 {
+#ifdef ENABLE_NCURSES
 	wprintw(messages_window, "%s\n", msg.c_str());
 	wrefresh(messages_window);
+#else
+	std::cout << msg << std::endl;
+#endif
 }
 
 void end_screen()
 {
+#ifdef ENABLE_NCURSES
 	if (messages_window)
 		delwin(messages_window);
 	if (user_data_window)
 		delwin(user_data_window);
 	endwin();
+#endif
 }
 
 void init_screen()
 {
+#ifdef ENABLE_NCURSES
 	initscr();
 
 	user_data_window = create_win(3, COLS, LINES - 3, 0, 1);
 	messages_window = create_win(LINES - 3, COLS, 0, 0, 0);
 
 	scrollok(messages_window, TRUE);
+#endif
 }
 
 std::string get_user_input()
 {
+#ifdef ENABLE_NCURSES
 	werase(user_data_window);
 	box(user_data_window, 0, 0);
 	wmove(user_data_window, 1, 1);
@@ -62,4 +71,9 @@ std::string get_user_input()
 	std::string retstr(user_data.begin(), user_data.end());
 
 	return retstr;
+#else
+	std::string ret;
+	std::cin >> ret;
+	return ret;
+#endif
 }

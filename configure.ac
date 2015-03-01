@@ -9,6 +9,10 @@ AC_ARG_ENABLE([verbose],
 	AC_HELP_STRING([--enable-verbose],
 		[Enables verbose output from server and client.]))
 
+AC_ARG_ENABLE([ncurses],
+	AC_HELP_STRING([--enable-curses],
+		[Enables ncurses to draw windows. This is used to when running valgrind. Valgrind reports a lot of leaks in ncurses]))
+
 AC_MSG_CHECKING([build with verbose enabled])
 
 if test "x$enable_verbose" == "xyes"; then
@@ -17,6 +21,15 @@ if test "x$enable_verbose" == "xyes"; then
 else
 	AC_MSG_RESULT([no])
 fi
+
+AC_MSG_CHECKING([build with ncurses enabled])
+if test "x$enable_ncurses" == "xyes"; then
+	AC_MSG_RESULT([yes])
+	AC_DEFINE(ENABLE_NCURSES, "TRUE")
+else
+	AC_MSG_RESULT([no])
+fi
+
 
 AM_INIT_AUTOMAKE([1.11])
 AC_CONFIG_FILES([Makefile src/Makefile])
