@@ -8,7 +8,6 @@
 class Client
 {
 public:
-	Client(std::string addr, std::string nickname);
 	~Client();
 	void server_connect();
 	void send_user_message();
@@ -17,7 +16,17 @@ public:
 	bool isConnected() { return connected; }
 	static void helpMessage();
 
+	void initClient(std::string addr, std::string nickname);
+
+	// singleton
+	static Client* getInstance();
+
 private:
+	// singleton
+	Client() {};
+	Client (Client const&);
+	Client&  operator = (const Client& c);
+
 	bool connected;
 	int sock_server;
 	struct sockaddr_in server_addr;

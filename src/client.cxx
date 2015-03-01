@@ -6,10 +6,21 @@
 #include <string.h>
 #include <strings.h>
 #include <unistd.h>
+#include <csignal>
 #include <thread>
 #include <vector>
 
-Client::Client(std::string addr, std::string nick)
+// used inside sighandler
+Client* client = nullptr;
+
+Client::~Client()
+{
+	if (sock_server)
+		close(sock_server);
+	std::cout << "Client finished. Bye!" << std::endl;
+}
+
+void Client::initClient(std::string addr, std::string nick)
 {
 	sock_server = 0;
 	bzero(&server_addr, sizeof(server_addr));
@@ -18,11 +29,10 @@ Client::Client(std::string addr, std::string nick)
 	connected = false;
 }
 
-Client::~Client()
+Client* Client::getInstance()
 {
-	if (sock_server)
-		close(sock_server);
-	std::cout << "Client finished. Bye!" << std::endl;
+	static Client* instance = new Client();
+	return instance;
 }
 
 void Client::server_connect()
@@ -100,7 +110,7 @@ void Client::recv_msgs()
 		}
 
 		if (cm.type == SERVER_MESSAGE)
-			add_message_to_window(std::string(cm.msg));
+			add_message_to_window(std::string(cm.msg), false);
 	}
 }
 
@@ -129,6 +139,13 @@ void Client::helpMessage()
 	std::cout << "You need to give the address number and nickname as argument!" << std::endl;
 }
 
+void sighandler(int sig)
+{
+	(void)sig;
+	delete client;
+	exit(EXIT_SUCCESS);
+}
+
 int main(int argc, char *argv[])
 {
 	if (argc < 3) {
@@ -136,21 +153,26 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	Client client(argv[1], argv[2]);
+	std::signal(SIGINT, sighandler);
+
+	client = Client::getInstance();
+	client->initClient(argv[1], argv[2]);
 
 	init_screen();
 
 	// first attempt to connect
-	client.server_connect();
-	if (client.isConnected())
+	client->server_connect();
+	if (client->isConnected())
 		add_message("Connected to server");
 
-	std::thread recv_msgs(&Client::recv_msgs, &client);
+	std::thread recv_msgs(&Client::recv_msgs, client);
 	recv_msgs.detach();
 
-	client.send_user_message();
+	client->send_user_message();
 
 	end_screen();
+
+	delete client;
 
 	return EXIT_SUCCESS;
 }
