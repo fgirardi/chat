@@ -22,6 +22,7 @@ Client::~Client()
 {
 	if (sock_server)
 		close(sock_server);
+	std::cout << "Client finished. Bye!" << std::endl;
 }
 
 void Client::server_connect()
@@ -124,13 +125,14 @@ void Client::add_message_to_window(std::string msg, bool add_nickname)
 void Client::helpMessage()
 {
 	std::cout << "You need to give the address number and nickname as argument!" << std::endl;
-	exit(EXIT_FAILURE);
 }
 
 int main(int argc, char *argv[])
 {
-	if (argc < 3)
+	if (argc < 3) {
 		Client::helpMessage();
+		return EXIT_FAILURE;
+	}
 
 	Client client(argv[1], argv[2]);
 
@@ -149,5 +151,5 @@ int main(int argc, char *argv[])
 
 	end_screen();
 
-	exit(EXIT_SUCCESS);
+	return EXIT_SUCCESS;
 }
