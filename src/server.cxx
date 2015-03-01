@@ -17,6 +17,7 @@
 
 #include "chat.h"
 #include "server.h"
+#include "screen.h"
 
 /*
 TODO:
@@ -223,6 +224,15 @@ void Server::handleMessages()
 	}
 }
 
+void getUserInput()
+{
+	while (true) {
+		std::string input = get_user_input();
+		if (input == "/exit")
+			break;
+	}
+}
+
 void sigHandler(int signal)
 {
 	(void)signal;
@@ -236,10 +246,19 @@ int main()
 
 	std::signal(SIGINT, sigHandler);
 
+	init_screen();
+
 	if (!server->init())
 		exit(EXIT_FAILURE);
 
-	server->handleMessages();
+	add_message("Server started");
+
+	std::thread handle_server(&Server::handleMessages, server);
+	handle_server.detach();
+
+	getUserInput();
+
+	end_screen();
 
 	delete server;
 	return EXIT_SUCCESS;
