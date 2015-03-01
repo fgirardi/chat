@@ -135,6 +135,9 @@ bool Server::init()
 		return false;
 	}
 
+	// add command exit to default accepted commands
+	m_commands = {"/exit"};
+
 	return true;
 }
 

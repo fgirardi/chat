@@ -49,6 +49,8 @@ private:
 	int epollfd;
 	struct sockaddr_in server;
 
+	std::unordered_set<std::string> m_commands;
+
 	std::unordered_set<ClientConn, Hash> clients;
 	std::mutex client_mutex;
 };
