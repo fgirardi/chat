@@ -23,11 +23,11 @@ else
 fi
 
 AC_MSG_CHECKING([build with ncurses enabled])
-if test "x$enable_ncurses" == "xyes"; then
+if test "x$enable_ncurses" == "xno"; then
+	AC_MSG_RESULT([no])
+else
 	AC_MSG_RESULT([yes])
 	AC_DEFINE(ENABLE_NCURSES, "TRUE")
-else
-	AC_MSG_RESULT([no])
 fi
 
 
