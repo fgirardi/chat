@@ -31,7 +31,7 @@ Server *server = nullptr;
 
 void Server::send_message_to_clients(int sock_client, std::string msg)
 {
-	client_mutex.lock();
+	std::lock_guard<std::mutex> lock(client_mutex);
 
 	struct chat_message cm;
 	// valgrind: uninit. bytes
@@ -49,8 +49,6 @@ void Server::send_message_to_clients(int sock_client, std::string msg)
 		do_verbose("server: send message to socket " + std::to_string(c.sockid));
 		send(c.sockid, &cm, sizeof(cm), 0);
 	}
-
-	client_mutex.unlock();
 }
 
 ClientConn::ClientConn(int sockid, std::string name)
@@ -81,9 +79,8 @@ void Server::add_client(int sock_client, char* nickname)
 	do_verbose("server: Connection successful socket " + std::to_string(sock_client));
 	send_message_to_clients(sock_client, "User " + std::string(c.nickname) + " entered in the room");
 
-	client_mutex.lock();
+	std::lock_guard<std::mutex> lock(client_mutex);
 	clients.insert(c);
-	client_mutex.unlock();
 }
 
 void Server::remove_client(int sock_client, char *nickname)
@@ -97,9 +94,8 @@ void Server::remove_client(int sock_client, char *nickname)
 		send_message_to_clients(sock_client, "User " + std::string(c->nickname) + " was disconnected from the room");
 	}
 
-	client_mutex.lock();
+	std::lock_guard<std::mutex> lock(client_mutex);
 	clients.erase(cli);
-	client_mutex.unlock();
 
 	// close client socket
 	close(sock_client);
@@ -108,12 +104,11 @@ void Server::remove_client(int sock_client, char *nickname)
 bool Server::listUsers()
 {
 	add_message("Connected users:");
-	client_mutex.lock();
+
+	std::lock_guard<std::mutex> lock(client_mutex);
 
 	for (auto c : clients)
 		add_message("\t" + c.nickname);
-
-	client_mutex.unlock();
 
 	return true;
 }
