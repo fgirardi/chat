@@ -105,6 +105,19 @@ void Server::remove_client(int sock_client, char *nickname)
 	close(sock_client);
 }
 
+bool Server::listUsers()
+{
+	add_message("Connected users:");
+	client_mutex.lock();
+
+	for (auto c : clients)
+		add_message("\t" + c.nickname);
+
+	client_mutex.unlock();
+
+	return true;
+}
+
 bool Server::init()
 {
 	sock_server = socket(PF_INET, SOCK_STREAM, 0);
@@ -135,8 +148,8 @@ bool Server::init()
 		return false;
 	}
 
-	// add command exit to default accepted commands
-	m_commands = {"/exit"};
+	// register callbacks of commands
+	m_callbacks.insert(std::make_pair("/list", &Server::listUsers));
 
 	return true;
 }
@@ -227,12 +240,15 @@ void Server::handleMessages()
 	}
 }
 
-void getUserInput()
+void Server::getUserInput()
 {
 	while (true) {
 		std::string input = get_user_input();
 		if (input == "/exit")
 			break;
+		auto map_it = m_callbacks.find(input);
+		if (map_it != m_callbacks.end())
+			(this->*m_callbacks[input])();
 	}
 }
 
@@ -259,7 +275,7 @@ int main()
 	std::thread handle_server(&Server::handleMessages, server);
 	handle_server.detach();
 
-	getUserInput();
+	server->getUserInput();
 
 	end_screen();
 

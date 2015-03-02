@@ -2,6 +2,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
+#include <map>
 #include <mutex>
 #include <unordered_set>
 
@@ -35,6 +36,9 @@ public:
 	void send_message_to_clients(int sock_client, std::string msg);
 	void add_client(int sock_client, char *nickname);
 	void remove_client(int sock_client, char *nickname);
+	void getUserInput();
+
+	bool listUsers();
 
 	// singleton
 	static Server* getInstance();
@@ -49,7 +53,8 @@ private:
 	int epollfd;
 	struct sockaddr_in server;
 
-	std::unordered_set<std::string> m_commands;
+	typedef bool (Server::*Callback)();
+	std::map<std::string, Callback> m_callbacks;
 
 	std::unordered_set<ClientConn, Hash> clients;
 	std::mutex client_mutex;
