@@ -26,9 +26,6 @@ TODO:
 
 #define MAX_EVENTS 100
 
-// used by signal to close the socket when receiving a SIGINT
-Server *server = nullptr;
-
 void Server::send_message_to_clients(int sock_client, std::string msg)
 {
 	std::lock_guard<std::mutex> lock(client_mutex);
@@ -69,8 +66,8 @@ Server::~Server()
 
 Server* Server::getInstance()
 {
-	static Server* instance = new Server();
-	return instance;
+	static Server instance;
+	return &instance;
 }
 
 void Server::add_client(int sock_client, char* nickname)
@@ -250,13 +247,12 @@ void Server::getUserInput()
 void sigHandler(int signal)
 {
 	(void)signal;
-	delete server;
 	exit(EXIT_SUCCESS);
 }
 
 int main()
 {
-	server = Server::getInstance();
+	Server* server = Server::getInstance();
 
 	std::signal(SIGINT, sigHandler);
 
@@ -274,6 +270,5 @@ int main()
 
 	end_screen();
 
-	delete server;
 	return EXIT_SUCCESS;
 }
