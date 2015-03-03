@@ -101,14 +101,31 @@ void Server::remove_client(int sock_client, char *nickname)
 
 bool Server::listUsers()
 {
-	add_message("Connected users:");
-
 	std::lock_guard<std::mutex> lock(client_mutex);
 
-	for (auto c : clients)
-		add_message("\t" + c.nickname);
+	if (clients.size() > 0) {
+		add_message("Connected users:");
+
+		for (auto c : clients)
+			add_message("\t" + c.nickname);
+	} else {
+		add_message("Without users connected");
+	}
 
 	return true;
+}
+
+bool Server::listCommands()
+{
+	add_message("Available commands:");
+	for (auto m : m_callbacks)
+		add_message("\t" + m.first);
+	return true;
+}
+
+bool Server::exitCommand()
+{
+	std::exit(EXIT_SUCCESS);
 }
 
 bool Server::init()
@@ -142,7 +159,10 @@ bool Server::init()
 	}
 
 	// register callbacks of commands
+	m_callbacks.insert(std::make_pair("/exit", &Server::exitCommand));
+	m_callbacks.insert(std::make_pair("/quit", &Server::exitCommand));
 	m_callbacks.insert(std::make_pair("/list", &Server::listUsers));
+	m_callbacks.insert(std::make_pair("/commands", &Server::listCommands));
 
 	init_screen();
 
@@ -239,8 +259,6 @@ void Server::getUserInput()
 {
 	while (true) {
 		std::string input = get_user_input();
-		if (input == "/exit")
-			break;
 		auto map_it = m_callbacks.find(input);
 		if (map_it != m_callbacks.end())
 			(this->*m_callbacks[input])();

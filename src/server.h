@@ -39,6 +39,8 @@ public:
 	void getUserInput();
 
 	bool listUsers();
+	bool listCommands();
+	bool exitCommand();
 
 	// singleton
 	static Server* getInstance();
