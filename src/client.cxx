@@ -1,15 +1,15 @@
-#include "chat.h"
-#include "client.h"
-#include "screen.h"
-
-#include <string.h>
-#include <unistd.h>
-
 #include <chrono>
 #include <csignal>
 #include <cstdlib>
+#include <cstring>
 #include <thread>
 #include <vector>
+
+#include <unistd.h>
+
+#include "chat.h"
+#include "client.h"
+#include "screen.h"
 
 Client::~Client()
 {
@@ -53,7 +53,7 @@ void Client::server_connect()
 		return;
 
 	struct chat_message cm = {.type = REGISTER };
-	strcpy(cm.nickname, nickname.c_str());
+	std::copy(nickname.begin(), nickname.end(), cm.nickname);
 
 	if (send(sock_server, &cm, sizeof(cm), 0) == -1)
 		return;
@@ -79,8 +79,8 @@ void Client::send_user_message()
 		}
 
 		struct chat_message cm = {.type = SEND_MESSAGE };
-		strcpy(cm.nickname, nickname.c_str());
-		strcpy(cm.msg, nmsg.c_str());
+		std::copy(nickname.begin(), nickname.end(), cm.nickname);
+		std::copy(nmsg.begin(), nmsg.end(), cm.msg);
 
 		add_message_to_window(std::string(cm.msg), true);
 

@@ -1,19 +1,16 @@
 #include <csignal>
+#include <cstring>
 #include <cstdlib>
 #include <iostream>
 #include <thread>
 #include <unordered_set>
 
 #include <errno.h>
-#include <signal.h>
-#include <string.h>
-#include <strings.h>
+#include <fcntl.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/epoll.h>
 #include <unistd.h>
-
-#include <fcntl.h>
 
 #include "chat.h"
 #include "server.h"
@@ -35,7 +32,7 @@ void Server::send_message_to_clients(int sock_client, std::string msg)
 	bzero(&cm, sizeof(cm));
 
 	cm.type = SERVER_MESSAGE;
-	strncpy(cm.msg, msg.c_str(), msg.size() + 1);
+	std::copy(msg.begin(), msg.end(), cm.msg);
 
 	for (auto c : clients)
 	{
