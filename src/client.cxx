@@ -3,8 +3,9 @@
 #include "screen.h"
 
 #include <string.h>
-#include <strings.h>
 #include <unistd.h>
+
+#include <chrono>
 #include <csignal>
 #include <cstdlib>
 #include <thread>
@@ -79,9 +80,7 @@ void Client::send_user_message()
 
 		struct chat_message cm = {.type = SEND_MESSAGE };
 		strcpy(cm.nickname, nickname.c_str());
-
 		strcpy(cm.msg, nmsg.c_str());
-		cm.msg[strlen(cm.msg)] = '\0';
 
 		add_message_to_window(std::string(cm.msg), true);
 
@@ -97,7 +96,7 @@ void Client::recv_msgs()
 	while (true) {
 		while (!connected) {
 			add_message("Server is offline. Trying to connect in 2 two seconds");
-			sleep(2);
+			std::this_thread::sleep_for(std::chrono::seconds(2));
 			server_connect();
 
 			if (connected)
