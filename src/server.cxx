@@ -61,6 +61,7 @@ Server::~Server()
 	if (epollfd)
 		close(epollfd);
 
+	end_screen();
 	std::cout << "Server socket closed" << std::endl;
 }
 
@@ -142,6 +143,8 @@ bool Server::init()
 
 	// register callbacks of commands
 	m_callbacks.insert(std::make_pair("/list", &Server::listUsers));
+
+	init_screen();
 
 	return true;
 }
@@ -256,8 +259,6 @@ int main()
 
 	std::signal(SIGINT, sigHandler);
 
-	init_screen();
-
 	if (!server->init())
 		exit(EXIT_FAILURE);
 
@@ -267,8 +268,6 @@ int main()
 	handle_server.detach();
 
 	server->getUserInput();
-
-	end_screen();
 
 	return EXIT_SUCCESS;
 }
