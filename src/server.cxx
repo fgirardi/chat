@@ -159,10 +159,11 @@ bool Server::init()
 	}
 
 	// register callbacks of commands
-	m_callbacks.insert(std::make_pair("/exit", &Server::exitCommand));
-	m_callbacks.insert(std::make_pair("/quit", &Server::exitCommand));
-	m_callbacks.insert(std::make_pair("/list", &Server::listUsers));
-	m_callbacks.insert(std::make_pair("/commands", &Server::listCommands));
+	m_callbacks.insert({{std::make_pair("/exit", &Server::exitCommand)}
+				, {std::make_pair("/quit", &Server::exitCommand)}
+				, {std::make_pair("/list", &Server::listUsers)}
+				, {std::make_pair("/commands", &Server::listCommands)}
+	});
 
 	init_screen();
 
