@@ -10,9 +10,6 @@
 #include <thread>
 #include <vector>
 
-// used inside sighandler
-Client* client = nullptr;
-
 Client::~Client()
 {
 	if (sock_server)
@@ -31,8 +28,8 @@ void Client::initClient(std::string addr, std::string nick)
 
 Client* Client::getInstance()
 {
-	static Client* instance = new Client();
-	return instance;
+	static Client instance;
+	return &instance;
 }
 
 void Client::server_connect()
@@ -142,7 +139,6 @@ void Client::helpMessage()
 void sighandler(int sig)
 {
 	(void)sig;
-	delete client;
 	exit(EXIT_SUCCESS);
 }
 
@@ -155,7 +151,7 @@ int main(int argc, char *argv[])
 
 	std::signal(SIGINT, sighandler);
 
-	client = Client::getInstance();
+	Client* client = Client::getInstance();
 	client->initClient(argv[1], argv[2]);
 
 	init_screen();
@@ -171,8 +167,6 @@ int main(int argc, char *argv[])
 	client->send_user_message();
 
 	end_screen();
-
-	delete client;
 
 	return EXIT_SUCCESS;
 }
