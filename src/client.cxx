@@ -2,11 +2,11 @@
 #include "client.h"
 #include "screen.h"
 
-#include <stdlib.h>
 #include <string.h>
 #include <strings.h>
 #include <unistd.h>
 #include <csignal>
+#include <cstdlib>
 #include <thread>
 #include <vector>
 
@@ -138,20 +138,19 @@ void Client::add_message_to_window(std::string msg, bool add_nickname)
 void Client::helpMessage()
 {
 	std::cout << "You need to give the address number and nickname as argument!" << std::endl;
+	std::exit(EXIT_FAILURE);
 }
 
 void sighandler(int sig)
 {
 	(void)sig;
-	exit(EXIT_SUCCESS);
+	std::exit(EXIT_SUCCESS);
 }
 
 int main(int argc, char *argv[])
 {
-	if (argc < 3) {
+	if (argc < 3)
 		Client::helpMessage();
-		return EXIT_FAILURE;
-	}
 
 	std::signal(SIGINT, sighandler);
 
@@ -168,5 +167,5 @@ int main(int argc, char *argv[])
 
 	client->send_user_message();
 
-	return EXIT_SUCCESS;
+	std::exit(EXIT_SUCCESS);
 }

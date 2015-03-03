@@ -1,4 +1,5 @@
 #include <csignal>
+#include <cstdlib>
 #include <iostream>
 #include <thread>
 #include <unordered_set>
@@ -7,7 +8,6 @@
 #include <signal.h>
 #include <string.h>
 #include <strings.h>
-#include <stdlib.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/epoll.h>
@@ -250,7 +250,7 @@ void Server::getUserInput()
 void sigHandler(int signal)
 {
 	(void)signal;
-	exit(EXIT_SUCCESS);
+	std::exit(EXIT_SUCCESS);
 }
 
 int main()
@@ -260,7 +260,7 @@ int main()
 	std::signal(SIGINT, sigHandler);
 
 	if (!server->init())
-		exit(EXIT_FAILURE);
+		std::exit(EXIT_FAILURE);
 
 	add_message("Server started");
 
@@ -269,5 +269,5 @@ int main()
 
 	server->getUserInput();
 
-	return EXIT_SUCCESS;
+	std::exit(EXIT_SUCCESS);
 }
