@@ -4,6 +4,7 @@
 #define CHAT_PORT 9090
 
 #include <iostream>
+#include "screen.h"
 
 enum modes {
 	REGISTER,
@@ -20,7 +21,7 @@ struct chat_message {
 #ifdef ENABLE_VERBOSE
 void do_verbose(std::string msg)
 {
-	std::cout << msg << std::endl;
+	add_message(msg);
 }
 #else
 void do_verbose(std::string) {}
