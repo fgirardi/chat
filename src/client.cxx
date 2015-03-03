@@ -14,6 +14,8 @@ Client::~Client()
 {
 	if (sock_server)
 		close(sock_server);
+
+	end_screen();
 	std::cout << "Client finished. Bye!" << std::endl;
 }
 
@@ -24,6 +26,8 @@ void Client::initClient(std::string addr, std::string nick)
 	address = addr;
 	nickname = nick;
 	connected = false;
+
+	init_screen();
 }
 
 Client* Client::getInstance()
@@ -154,8 +158,6 @@ int main(int argc, char *argv[])
 	Client* client = Client::getInstance();
 	client->initClient(argv[1], argv[2]);
 
-	init_screen();
-
 	// first attempt to connect
 	client->server_connect();
 	if (client->isConnected())
@@ -165,8 +167,6 @@ int main(int argc, char *argv[])
 	recv_msgs.detach();
 
 	client->send_user_message();
-
-	end_screen();
 
 	return EXIT_SUCCESS;
 }
