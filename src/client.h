@@ -3,8 +3,6 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#include "chat.h"
-
 class Client
 {
 public:

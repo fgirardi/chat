@@ -3,9 +3,6 @@
 
 #define CHAT_PORT 9090
 
-#include <iostream>
-#include "screen.h"
-
 enum modes {
 	REGISTER,
 	SEND_MESSAGE,
