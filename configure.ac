@@ -10,7 +10,7 @@ AC_ARG_ENABLE([verbose],
 		[Enables verbose output from server and client.]))
 
 AC_ARG_ENABLE([ncurses],
-	AC_HELP_STRING([--enable-curses],
+	AC_HELP_STRING([--enable-ncurses],
 		[Enables ncurses to draw windows. This is used to when running valgrind. Valgrind reports a lot of leaks in ncurses]))
 
 AC_MSG_CHECKING([build with verbose enabled])
