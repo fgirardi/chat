@@ -27,11 +27,9 @@ void Server::send_message_to_clients(int sock_client, std::string msg)
 {
 	std::lock_guard<std::mutex> lock(client_mutex);
 
-	struct chat_message cm;
-	// valgrind: uninit. bytes
+	struct chat_message cm = {};
 	bzero(&cm, sizeof(cm));
 
-	cm.type = SERVER_MESSAGE;
 	std::copy(msg.begin(), msg.end(), cm.msg);
 
 	for (auto c : clients)
@@ -66,6 +64,15 @@ Server* Server::getInstance()
 {
 	static Server instance;
 	return &instance;
+}
+
+void Server::check_client(int sock_client, char* nickname)
+{
+	ClientConn cli(sock_client, nickname);
+	auto c = clients.find(cli);
+
+	if (c == clients.end())
+		add_client(sock_client, nickname);
 }
 
 void Server::add_client(int sock_client, char* nickname)
@@ -196,10 +203,7 @@ void Server::handleMessages()
 		for (int i = 0; i < n; i++) {
 			// handle new connections into server
 			if (events[i].data.fd == sock_server) {
-				struct sockaddr_in client;
-
-				socklen_t client_len = sizeof(client);
-				int sock_client = accept(sock_server, (struct sockaddr *)&client, &client_len);
+				int sock_client = accept(sock_server, NULL, NULL);
 
 				if (sock_client == -1) {
 					do_verbose("accept");
@@ -236,11 +240,11 @@ void Server::handleMessages()
 				if (n < 0 && errno == EAGAIN)
 					continue;
 
-				if (cm.type == REGISTER)
-				{
-					add_client(sock_client, cm.nickname);
+				// verify client needs registration
+				check_client(sock_client, cm.nickname);
 
-				} else if (cm.type == SEND_MESSAGE) {
+				// the first package send an empty package to registrate the client
+				if (strlen(cm.msg) > 0) {
 					do_verbose("server: Received msg user " + std::string(cm.nickname) +
 							+ " socket " + std::to_string(sock_client)
 							+ " size " + std::to_string(n)
