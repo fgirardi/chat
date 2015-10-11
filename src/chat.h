@@ -3,16 +3,9 @@
 
 #define CHAT_PORT 9090
 
-enum modes {
-	REGISTER,
-	SEND_MESSAGE,
-	SERVER_MESSAGE
-};
-
 struct chat_message {
-	int type;
-	char msg[100];
 	char nickname[15];
+	char msg[100];
 };
 
 #ifdef ENABLE_VERBOSE

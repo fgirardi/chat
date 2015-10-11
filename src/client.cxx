@@ -52,7 +52,7 @@ void Client::server_connect()
 					(socklen_t)sizeof(server_addr)))
 		return;
 
-	struct chat_message cm = {.type = REGISTER };
+	struct chat_message cm = {};
 	std::copy(nickname.begin(), nickname.end(), cm.nickname);
 
 	if (send(sock_server, &cm, sizeof(cm), 0) == -1)
@@ -78,7 +78,7 @@ void Client::send_user_message()
 			continue;
 		}
 
-		struct chat_message cm = {.type = SEND_MESSAGE };
+		struct chat_message cm = {};
 		std::copy(nickname.begin(), nickname.end(), cm.nickname);
 		std::copy(nmsg.begin(), nmsg.end(), cm.msg);
 
@@ -109,8 +109,7 @@ void Client::recv_msgs()
 			continue;
 		}
 
-		if (cm.type == SERVER_MESSAGE)
-			add_message_to_window(std::string(cm.msg), false);
+		add_message_to_window(std::string(cm.msg), false);
 	}
 }
 
