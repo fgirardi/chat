@@ -203,10 +203,7 @@ void Server::handleMessages()
 		for (int i = 0; i < n; i++) {
 			// handle new connections into server
 			if (events[i].data.fd == sock_server) {
-				struct sockaddr_in client;
-
-				socklen_t client_len = sizeof(client);
-				int sock_client = accept(sock_server, (struct sockaddr *)&client, &client_len);
+				int sock_client = accept(sock_server, NULL, NULL);
 
 				if (sock_client == -1) {
 					do_verbose("accept");
