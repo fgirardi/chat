@@ -122,8 +122,8 @@ bool Server::listUsers()
 bool Server::listCommands()
 {
 	add_message("Available commands:");
-	for (auto m : m_callbacks)
-		add_message("\t" + m.first);
+	for (auto c : m_commands)
+		add_message("\t" + c);
 	return true;
 }
 
@@ -162,12 +162,7 @@ bool Server::init()
 		return false;
 	}
 
-	// register callbacks of commands
-	m_callbacks.insert({{std::make_pair("/exit", &Server::exitCommand)}
-				, {std::make_pair("/quit", &Server::exitCommand)}
-				, {std::make_pair("/list", &Server::listUsers)}
-				, {std::make_pair("/commands", &Server::listCommands)}
-	});
+	m_commands = {"/exit", "/list", "/commands"};
 
 	init_screen();
 
@@ -261,9 +256,13 @@ void Server::getUserInput()
 {
 	while (true) {
 		std::string input = get_user_input();
-		auto map_it = m_callbacks.find(input);
-		if (map_it != m_callbacks.end())
-			(this->*m_callbacks[input])();
+		if (input == "/list") {
+			listUsers();
+		} else if (input == "/commands") {
+			listCommands();
+		} else if (input == "/exit") {
+			exitCommand();
+		}
 	}
 }
 

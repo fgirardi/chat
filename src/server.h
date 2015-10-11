@@ -5,6 +5,7 @@
 #include <map>
 #include <mutex>
 #include <unordered_set>
+#include <vector>
 
 class ClientConn
 {
@@ -56,8 +57,7 @@ private:
 	int epollfd;
 	struct sockaddr_in server;
 
-	typedef bool (Server::*Callback)();
-	std::map<std::string, Callback> m_callbacks;
+	std::vector<std::string> m_commands;
 
 	std::unordered_set<ClientConn, Hash> clients;
 	std::mutex client_mutex;
