@@ -6,17 +6,15 @@ This is a simple chat application.
 Building software
 =================
 
-Ch@t needs autotools to be compiled. In Fedora systems:
+Ch@t needs meson to be compiled. In a modern Fedora system:
 
-	sudo yum install autoconf automake
+	sudo dnf install meson
 
 will install the tools needed. First of all you need to run:
 
-	./autogen.sh
+	meson build
+	cd build
+	ninja
 
-This will create the configure script that checks if your system
-has the dependencies needed to built ch@t. After that:
-
-	make
-
-This is create two binaries: server and client.
+This comannds will build the source code and place the binaries inside the
+build directory, creating server and client.
